@@ -4,3 +4,4 @@ from .subcategory_serializer import SubCategorySerializer
 from .category_serializer import CategorySerializer
 from .sale_serializer import SaleSerializer
 from .batch_serializer import BatchSerializer
+from .sale_detail_serializer import SaleDetailSerializer

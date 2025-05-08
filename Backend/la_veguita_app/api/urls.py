@@ -13,5 +13,7 @@ urlpatterns = [
     path("sales/", views.SaleListCreate.as_view(), name="sale-view-create-list"),
     path("sales/<int:id_sale>", views.SaleRetrieveUpdateDestroy.as_view(), name="sale-view-retrieve-update-destroy"),
     path("batch/", views.BatchListCreate.as_view(), name="batch-view-create-list"),
-    path("batch/<int:id>", views.BatchRetrieveUpdateDestroy.as_view(), name="batch-view-retrieve-update-destroy")
+    path("batch/<int:id>", views.BatchRetrieveUpdateDestroy.as_view(), name="batch-view-retrieve-update-destroy"),
+    path("sale_details/", views.SaleDetailListCreate.as_view(), name="sale_detail-view-create-list"),
+    path("sale_details/<int:id_sale_detail>", views.SaleDetailRetrieveUpdateDestroy.as_view(), name="sale_detail-view-retrieve-update-destroy"),
 ]
