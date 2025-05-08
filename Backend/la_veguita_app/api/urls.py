@@ -10,6 +10,8 @@ urlpatterns = [
     path("subcategory/<int:id>", views.SubCategoryRetrieveUpdateDestroy.as_view(), name="subcategory-view-retrieve-update-destroy"),
     path("category/", views.CategoryListCreate.as_view(), name="category-view-create-list"),
     path("category/<int:id>", views.CategoryRetrieveUpdateDestroy.as_view(), name="category-view-retrieve-update-destroy"),
+    path("sales/", views.SaleListCreate.as_view(), name="sale-view-create-list"),
+    path("sales/<int:id_sale>", views.SaleRetrieveUpdateDestroy.as_view(), name="sale-view-retrieve-update-destroy"),
     path("batch/", views.BatchListCreate.as_view(), name="batch-view-create-list"),
     path("batch/<int:id>", views.BatchRetrieveUpdateDestroy.as_view(), name="batch-view-retrieve-update-destroy")
 ]
