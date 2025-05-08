@@ -1,6 +1,6 @@
 from django.db import models
 
-class Subcategory(models.Model):
+class SubCategory(models.Model):
     id_subcategory = models.AutoField(primary_key=True)
     name = models.TextField()
 
