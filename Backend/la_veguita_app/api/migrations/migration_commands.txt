@@ -1,0 +1,5 @@
+# Crear archivos de migraciones
+# python manage.py makemigrations
+
+# Aplicar migraciones
+# python manage.py migrate
