@@ -4,4 +4,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['@/assets/css/tailwind.css'],
   modules: ['@nuxtjs/tailwindcss'],
+  app: {
+    head: {
+      title: 'La Veguita',  
+      link: [
+        { rel: 'icon', href: '/laveguitalogo-removebg-preview.png' }  
+      ]
+    }
+  }
 })

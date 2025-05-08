@@ -1,7 +1,13 @@
 <template>
-  <div class="min-h-screen mt-16 flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-blue-100 via-blue-50 to-gray-100 p-8">
-  
+  <div class="min-h-screen bg-blue-100">
     <Navbar />
-    <NuxtPage />
+    
+    <div class="pt-16">
+      <NuxtPage />
+    </div>
   </div>
 </template>
+
+<script setup>
+import Navbar from '@/components/Navbar.vue'
+</script>
