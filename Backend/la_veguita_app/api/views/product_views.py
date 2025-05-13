@@ -4,8 +4,13 @@ from ..models import Product
 from ..serializers import ProductSerializer
 
 
-class ProductListCreate(generics.ListCreateAPIView):
+class ProductCreateView(generics.CreateAPIView):
     queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+class ProductListView(generics.ListAPIView):
+    queryset = Product.objects.prefetch_related('subcategories')
     serializer_class = ProductSerializer
 
 
