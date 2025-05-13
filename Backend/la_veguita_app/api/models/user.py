@@ -7,7 +7,7 @@ class User(models.Model):
         vendor = 'vendor'
 
     id = models.AutoField(primary_key=True)
-    username = models.TextField()
+    username = models.CharField(max_length=100)
     email = models.EmailField(max_length=254)
     password = models.TextField()
     rol = models.CharField(max_length=6, choices=RolTypes.choices)
