@@ -3,6 +3,7 @@ from rest_framework import generics
 from ..models import SubCategory
 from ..serializers import SubCategorySerializer
 
+
 class SubCategoryListCreate(generics.ListCreateAPIView):
     queryset = SubCategory.objects.all()
     serializer_class = SubCategorySerializer
