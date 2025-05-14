@@ -1,4 +1,4 @@
-# Crear archivos de migraciones
+# Crear archivos de migraciones (SOLO OCUPAR COMANDO CUANDO SEA NECESARIO)
 # python manage.py makemigrations
 
 # Aplicar migraciones
