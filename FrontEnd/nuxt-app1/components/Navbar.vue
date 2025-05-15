@@ -1,22 +1,22 @@
 <template>
-  <nav class="bg-gradient-to-b from-blue-900/95 to-blue-800/80 backdrop-blur-sm text-white w-full sticky top-0 shadow">
+  <nav class="bg-[#8bc34a] text-white w-full sticky top-0 shadow">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center ">
         <NuxtLink to="/" class="flex items-center shrink-0">
-  <img 
-    src="/laveguitalogo-removebg-preview.png" 
-    alt="Icono LVG" 
-    class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain mr-2" 
-  />
-  <span class="text-lg sm:text-xl font-bold truncate">LVG</span>
-</NuxtLink>
+          <img 
+            src="/laveguitalogo-removebg-preview.png" 
+            alt="Icono LVG" 
+            class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain mr-2" 
+          />
+          <span class="text-lg sm:text-xl font-bold truncate">La Veguita</span>
+        </NuxtLink>
 
         <div class="hidden md:flex space-x-4 flex-grow justify-end min-w-0">
           <NuxtLink
             v-for="(item, index) in navItems"
             :key="index"
             :to="item.link"
-            class="hover:bg-blue-600/60 px-3 py-2 rounded-md transition"
+            class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition"
             @click="item.action"
           >
             {{ item.label }}
@@ -31,7 +31,7 @@
           <NuxtLink
             v-if="!item.action"
             :to="item.link"
-            class="hover:bg-blue-600/60 px-3 py-2 rounded-md"
+            class="hover:bg-[#7cb342] px-3 py-2 rounded-md"
             @click="menuOpen = false"
           >
             {{ item.label }}
@@ -39,33 +39,31 @@
           <button
             v-else
             @click="() => { item.action(); menuOpen = false }"
-            class="hover:bg-blue-600/60 px-3 py-2 rounded-md text-left"
+            class="hover:bg-[#7cb342] px-3 py-2 rounded-md text-left"
           >
             {{ item.label }}
           </button>
         </template>
       </div>
-
     </div>
   </nav>
 
   <!-- Modal (Popup) para Iniciar Sesión -->
   <div v-if="isLoginModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-60" @click="closeLoginModal">
-    <!-- Evitar que el clic dentro del modal cierre el modal -->
     <div @click.stop class="bg-white p-8 rounded-lg shadow-lg w-96 z-70 absolute top-20 left-1/2 transform -translate-x-1/2">
       <h2 class="text-xl font-bold mb-4">Iniciar Sesión</h2>
       <form @submit.prevent="handleLogin">
         <div class="mb-4">
           <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
-          <input v-model="username" id="username" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required />
+          <input v-model="username" id="username" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]" required />
         </div>
         <div class="mb-6">
           <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-          <input v-model="password" id="password" type="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required />
+          <input v-model="password" id="password" type="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]" required />
         </div>
         <div class="flex justify-between items-center">
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md">Ingresar</button>
-          <button type="button" @click="togglePasswordRecovery" class="text-blue-600">¿Recuperar Contraseña?</button>
+          <button type="submit" class="bg-[#ff9800] text-white px-4 py-2 rounded-md">Ingresar</button>
+          <button type="button" @click="togglePasswordRecovery" class="text-[#ff9800]">¿Recuperar Contraseña?</button>
         </div>
       </form>
       <button @click="closeLoginModal" class="absolute top-2 right-2 text-gray-500">✘</button>
@@ -76,52 +74,35 @@
 <script setup>
 import { ref } from 'vue'
 
-// Función para abrir el modal de login
 const openLoginModal = () => {
   isLoginModalOpen.value = true
 }
-
-// Función para cerrar el modal de login
 const closeLoginModal = () => {
   isLoginModalOpen.value = false
 }
-
-// Lógica para manejar el inicio de sesión
 const handleLogin = () => {
   console.log('Usuario:', username.value)
   console.log('Contraseña:', password.value)
   closeLoginModal()
 }
-
-// Función para manejar la recuperación de contraseña
 const togglePasswordRecovery = () => {
   console.log('Recuperación de Contraseña')
 }
-
-// Control de visibilidad del modal de login
-const isLoginModalOpen = ref(false)  
-
-// Variables para los campos de usuario y contraseña
+const isLoginModalOpen = ref(false)
 const username = ref('')
 const password = ref('')
-
-// Control del menú desplegable
 const menuOpen = ref(false)
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
 }
-
-// Elementos de la navegación
 const navItems = [
   { label: 'Productos', link: '/productos' },
   { label: 'Resumen Semanal', link: '/resumenSemanal' },
-  { label: 'Ingresar', link: 'javascript:void(0)', action: openLoginModal } // Acción para abrir el modal
+  { label: 'Ingresar', link: 'javascript:void(0)', action: openLoginModal }
 ]
-
 </script>
 
 <style scoped>
-/* Aseguramos que la navbar esté fija en la parte superior */
 nav {
   position: fixed;
   top: 0;
