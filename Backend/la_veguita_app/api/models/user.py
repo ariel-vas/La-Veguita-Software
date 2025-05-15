@@ -6,7 +6,7 @@ class User(models.Model):
         ADMIN = 'admin'
         vendor = 'vendor'
 
-    id = models.AutoField(primary_key=True)
+    id_user = models.AutoField(primary_key=True)
     username = models.CharField(max_length=100)
     email = models.EmailField(max_length=254)
     password = models.TextField()

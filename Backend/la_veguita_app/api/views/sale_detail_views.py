@@ -12,4 +12,8 @@ class SaleDetailListCreate(generics.ListCreateAPIView):
 class SaleDetailRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = SaleDetail.objects.all()
     serializer_class = SaleDetailSerializer
-    lookup_field = "id_sale_detail"
+
+    def get_object(self):
+        sale_id = self.kwargs['sale_id']
+        product_id = self.kwargs['product_id']
+        return SaleDetail.objects.get(sale__id_sale=sale_id, product__id_product=product_id)
