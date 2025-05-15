@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'api',
     'rest_framework',
-    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -52,15 +51,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Nuxt en modo dev
 ]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Nuxt en modo dev
-]
+
 ROOT_URLCONF = 'la_veguita_app.urls'
 
 TEMPLATES = [
