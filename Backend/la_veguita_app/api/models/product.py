@@ -9,7 +9,7 @@ class Product(models.Model):
         UNIT = 'unit'
         KILO = 'kilo'
 
-    id_product = models.DecimalField(max_digits=50, decimal_places=0, unique=True, validators=[MinValueValidator(0)])
+    id_product = models.DecimalField(max_digits=50, decimal_places=0, unique=True, primary_key=True, validators=[MinValueValidator(0)])
     name = models.CharField(max_length=150, unique=True)
     description = models.TextField()
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
