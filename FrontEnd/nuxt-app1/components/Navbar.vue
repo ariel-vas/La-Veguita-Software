@@ -97,7 +97,8 @@ const toggleMenu = () => {
 }
 const navItems = [
   { label: 'Productos', link: '/productos' },
-  { label: 'Resumen Semanal', link: '/resumenSemanal' },
+  { label: 'Categorias', link: '/categorias' },
+  { label: 'Sub-Categorias', link: '/subcategorias' },
   { label: 'Ingresar', link: 'javascript:void(0)', action: openLoginModal }
 ]
 </script>

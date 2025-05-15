@@ -33,7 +33,9 @@
         <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
           <td class="py-3 px-6">{{ prod.id_product }}</td>
           <td class="py-3 px-6">{{ prod.name }}</td>
-          <td class="py-3 px-6">${{ (prod.sale_price_unit != 0) || prod.sale_price_kilo || '0.00' }}</td>
+          <td class="py-3 px-6">${{ Number(prod.sale_price_unit) !== 0
+                                  ? Number(prod.sale_price_unit)
+                                  : Number(prod.sale_price_kilo)}}</td>
           <td class="py-3 px-6">
             <button
               @click="navigateToPage(prod.id_product)"

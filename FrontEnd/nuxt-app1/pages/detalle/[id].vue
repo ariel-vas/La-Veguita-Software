@@ -1,56 +1,242 @@
-<template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
-    <h1 class="text-4xl font-bold text-[#8bc34a]">Detalle del Producto</h1>
-
-    <div v-if="producto" class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-xl space-y-4">
-      <p><strong>Código:</strong> {{ producto.id_product }}</p>
-      <p><strong>Nombre:</strong> {{ producto.name }}</p>
-      <p><strong>Descripción:</strong> {{ producto.description }}</p>
-      <p><strong>Categoría:</strong> {{ producto.category }}</p>
-      <p><strong>Proveedor:</strong> {{ producto.supplier }}</p>
-      
-      <div>
-        <strong>Subcategorías:</strong>
-        <ul class="list-disc list-inside">
-          <li v-for="(sub, idx) in producto.subcategories" :key="idx">{{ sub }}</li>
-        </ul>
-      </div>
-
-      <p><strong>Precio compra:</strong> ${{ producto.purchase_price }}</p>
-      <p><strong>Precio venta por unidad:</strong> ${{ producto.sale_price_unit }}</p>
-      <p><strong>Precio venta por kilo:</strong> ${{ producto.sale_price_kilo }}</p>
-      <p><strong>Precio por mayoreo:</strong> ${{ producto.wholesale_price }} (mínimo {{ parseInt(producto.wholesale_quantity) }})</p>
-      <p><strong>Descuento / Recargo:</strong> ${{ producto.discount_surcharge }}</p>
-      <p><strong>Stock disponible:</strong> {{ producto.stock }} {{ producto.stock_unit }}</p>
-      <p><strong>Stock crítico:</strong> {{ producto.critical_stock }} {{ producto.stock_unit }}</p>
-      <p><strong>Producto compuesto:</strong> {{ producto.composed_product ? 'Sí' : 'No' }}</p>
-    </div>
-
-    <div v-else class="text-gray-600 text-lg">Cargando producto...</div>
-  <button
-    @click="$router.push('/productos')"
-    class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 "
-  >
-    Volver atrás
-  </button>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const producto = ref(null)
+const editado = ref({})
 const route = useRoute()
+const router = useRouter()
 const id = route.params.id
+
+const categoriasDisponibles = ref([])
+const subcategoriasDisponibles = ref([])
+const proveedoresDisponibles = ref([])
+
+const camposEditables = [
+  { key: 'name', label: 'Nombre' },
+  { key: 'description', label: 'Descripción' },
+  { key: 'category', label: 'Categoría' },
+  { key: 'subcategories', label: 'Subcategorías' },
+  { key: 'supplier', label: 'Proveedor' },
+  { key: 'purchase_price', label: 'Precio de compra', type: 'number' },
+  { key: 'sale_price_unit', label: 'Precio venta unidad', type: 'number' },
+  { key: 'sale_price_kilo', label: 'Precio venta kilo', type: 'number' },
+  { key: 'wholesale_price', label: 'Precio mayoreo', type: 'number' },
+  { key: 'wholesale_quantity', label: 'Cantidad mayoreo', type: 'number' },
+  { key: 'discount_surcharge', label: 'Descuento / Recargo', type: 'number' },
+  { key: 'stock', label: 'Stock disponible', type: 'number' },
+  { key: 'critical_stock', label: 'Stock crítico', type: 'number' },
+  {
+    key: 'entry_stock_unit',
+    label: 'Unidad entrada stock',
+    type: 'select',
+    options: [
+      { label: 'Unidad', value: 'unit' },
+      { label: 'Kilo', value: 'kilo' },
+    ]
+  },
+  {
+    key: 'exit_stock_unit',
+    label: 'Unidad salida stock',
+    type: 'select',
+    options: [
+      { label: 'Unidad', value: 'unit' },
+      { label: 'Kilo', value: 'kilo' },
+    ]
+  },
+  { key: 'composed_product', label: 'Producto compuesto', type: 'checkbox' },
+]
+
+const confirmarEliminacion = ref(false)
 
 onMounted(async () => {
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/products/${id}`)
     if (!res.ok) throw new Error('Producto no encontrado')
-    producto.value = await res.json()
+    const data = await res.json()
+    if (!Array.isArray(data.subcategories)) data.subcategories = []
+    editado.value = { ...data }
+    producto.value = data
+
+    // Cargar listas para selects
+    const [catRes, subcatRes, provRes] = await Promise.all([
+      fetch('http://127.0.0.1:8000/api/categories/'),
+      fetch('http://127.0.0.1:8000/api/subcategories/'),
+      fetch('http://127.0.0.1:8000/api/suppliers/')
+    ])
+    categoriasDisponibles.value = await catRes.json()
+    subcategoriasDisponibles.value = await subcatRes.json()
+    proveedoresDisponibles.value = await provRes.json()
+
   } catch (error) {
     console.error('Error al cargar producto:', error)
   }
 })
+
+const guardarCambios = async () => {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editado.value),
+    })
+    if (!res.ok) throw new Error('Error al guardar los cambios')
+    alert('Producto actualizado correctamente')
+    producto.value = { ...editado.value }
+  } catch (err) {
+    console.error('Error al guardar:', err)
+    alert('Error al guardar los cambios')
+  }
+}
+
+const agregarSubcategoria = () => {
+  editado.value.subcategories.push('')
+}
+
+const eliminarSubcategoria = (index) => {
+  editado.value.subcategories.splice(index, 1)
+}
+
+const eliminarProducto = async () => {
+  if (!confirmarEliminacion.value) {
+    confirmarEliminacion.value = true
+    return
+  }
+
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Error al eliminar producto')
+    alert('Producto eliminado correctamente')
+    router.push('/productos')
+  } catch (err) {
+    console.error('Error al eliminar:', err)
+    alert('Error al eliminar el producto')
+  }
+}
 </script>
+
+<template>
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
+    <h1 class="text-4xl font-bold text-[#8bc34a]">Editar Producto</h1>
+
+    <div v-if="producto" class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-xl space-y-6">
+      <div
+        v-for="campo in camposEditables"
+        :key="campo.key"
+        class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start"
+      >
+        <label class="font-semibold">{{ campo.label }}:</label>
+
+        <!-- Subcategorías -->
+        <div v-if="campo.key === 'subcategories'" class="sm:col-span-2 space-y-2">
+          <div
+            v-for="(subcat, index) in editado.subcategories"
+            :key="index"
+            class="flex gap-2 items-center"
+          >
+            <select
+              v-model="editado.subcategories[index]"
+              class="border border-gray-300 rounded px-3 py-1 w-full"
+            >
+              <option disabled value="">Seleccionar subcategoría</option>
+              <option
+                v-for="subcatOpt in subcategoriasDisponibles.filter(opt => !editado.subcategories.includes(opt.name) || opt.name === subcat)"
+                :key="subcatOpt.id"
+                :value="subcatOpt.name"
+              >
+                {{ subcatOpt.name }}
+              </option>
+            </select>
+            <button @click="eliminarSubcategoria(index)" class="text-red-600 hover:text-red-800 font-bold">✕</button>
+          </div>
+          <button
+            @click="agregarSubcategoria"
+            class="text-sm text-blue-600 hover:underline mt-1"
+            :disabled="editado.subcategories.length >= subcategoriasDisponibles.length"
+          >
+            + Agregar subcategoría
+          </button>
+        </div>
+
+        <!-- Categoría -->
+        <select
+          v-else-if="campo.key === 'category'"
+          v-model="editado.category"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+        >
+          <option disabled value="">Seleccionar categoría</option>
+          <option v-for="cat in categoriasDisponibles" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
+        </select>
+
+        <!-- Proveedor -->
+        <select
+          v-else-if="campo.key === 'supplier'"
+          v-model="editado.supplier"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+        >
+          <option disabled value="">Seleccionar proveedor</option>
+          <option v-for="prov in proveedoresDisponibles" :key="prov.id" :value="prov.name">{{ prov.name }}</option>
+        </select>
+
+        <!-- Unidad entrada/salida -->
+        <select
+          v-else-if="campo.key === 'entry_stock_unit' || campo.key === 'exit_stock_unit'"
+          v-model="editado[campo.key]"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+        >
+          <option disabled value="">Seleccionar unidad</option>
+          <option value="unit">Unidad</option>
+          <option value="kilo">Kilo</option>
+        </select>
+
+        <!-- Checkbox -->
+        <input
+          v-else-if="campo.type === 'checkbox'"
+          v-model="editado[campo.key]"
+          type="checkbox"
+          class="w-5 h-5 sm:col-span-2"
+        />
+
+        <!-- Input genérico -->
+        <input
+          v-else
+          v-model="editado[campo.key]"
+          :type="campo.type || 'text'"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+          :placeholder="campo.label"
+        />
+      </div>
+
+      <div class="flex flex-col items-center gap-3 mt-6">
+        <button
+          @click="guardarCambios"
+          class="bg-[#8bc34a] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
+        >
+          Guardar Cambios
+        </button>
+
+        <button
+          @click="eliminarProducto"
+          class="bg-red-500 text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
+        >
+          {{ confirmarEliminacion ? 'Confirmar eliminación' : 'Eliminar Producto' }}
+        </button>
+
+        <p v-if="confirmarEliminacion" class="text-sm text-red-700 text-center max-w-md">
+          Esta acción eliminará el producto de forma permanente. Haz clic nuevamente para confirmar.
+        </p>
+      </div>
+    </div>
+
+    <div v-else class="text-gray-600 text-lg">Cargando producto...</div>
+
+    <button
+      @click="$router.push('/productos')"
+      class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 mt-4"
+>
+Volver a Productos
+</button>
+
+</div> </template>
