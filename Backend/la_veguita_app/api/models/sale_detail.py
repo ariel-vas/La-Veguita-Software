@@ -16,5 +16,10 @@ class SaleDetail(models.Model):
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['sale', 'product'], name='unique_sale_product')
+        ]
+
     def __str__(self):
         return "{}_{}".format(self.sale.__str__(), self.product.__str__())
