@@ -37,7 +37,8 @@ class ProductSerializer(serializers.ModelSerializer):
                   'discount_surcharge',
                   'stock',
                   'critical_stock',
-                  'stock_unit',
+                  'entry_stock_unit',
+                  'exit_stock_unit',
                   'composed_product',
                   'category', 'supplier', 'subcategories']
 
