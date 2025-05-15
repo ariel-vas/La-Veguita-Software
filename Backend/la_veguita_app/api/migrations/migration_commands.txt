@@ -1,4 +1,6 @@
-# Crear archivos de migraciones (SOLO OCUPAR COMANDO CUANDO SEA NECESARIO)
+# EJECUTAR COMANDOS EN RUTA: ...\La-Veguita-Software\Backend\la_veguita_app>
+
+# Crear nueva migracion de BD (SOLO OCUPAR COMANDO CUANDO SEA NECESARIO, SI NO LO ES SOLO EJECUTAR SIGUIENTE COMANDO)
 # python manage.py makemigrations
 
 # Aplicar migraciones
