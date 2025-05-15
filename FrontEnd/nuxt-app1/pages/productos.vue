@@ -51,7 +51,14 @@
 
     <!-- Mensaje de error -->
     <div v-if="error" class="text-2xl font-semibold text-red-600 mt-6">{{ error }}</div>
-  </div>
+  <button
+    @click="$router.push('/')"
+    class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 "
+  >
+    Volver atrás
+  </button>
+</div>
+  
 </template>
 
 <script>
