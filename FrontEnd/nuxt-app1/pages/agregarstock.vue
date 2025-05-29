@@ -32,18 +32,34 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
+        <tr
+          v-for="prod in displayedProducts"
+          :key="prod.id_product"
+          class="border-b hover:bg-[#f0f8e9]"
+        >
           <td class="py-3 px-6">{{ prod.id_product }}</td>
           <td class="py-3 px-6">{{ prod.name }}</td>
-          <td class="py-3 px-6">{{ parseFloat(prod.stock).toFixed(2) }}</td>
+
+          <!-- Stock actual con unidad -->
+          <td class="py-3 px-6">
+            {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
+            <span class="text-sm text-gray-600 ml-1">
+              ({{ prod.exit_stock_unit === 'unit' ? 'Unidades' : 'Kilos' }})
+            </span>
+          </td>
+
+          <!-- Agregar stock -->
           <td class="py-3 px-6">
             <input
-              v-model.number="prod.stockToAdd"
+              :value="prod.stockToAdd"
+              @input="validateStockInput($event, prod)"
               type="number"
-              min="1"
+              :step="prod.exit_stock_unit === 'unit' ? '1' : '0.01'"
+              :min="prod.exit_stock_unit === 'unit' ? '1' : '0.01'"
               class="w-24 p-1 border border-[#8bc34a] rounded mr-2"
               placeholder="Cant."
             />
+
             <button
               @click="addStock(prod)"
               class="bg-[#ff9800] text-white py-1 px-4 rounded hover:bg-opacity-90 transition"
@@ -56,6 +72,7 @@
           <td colspan="4" class="text-center py-4 text-gray-500">No hay productos para mostrar.</td>
         </tr>
       </tbody>
+
     </table>
 
     <!-- Error -->
@@ -89,6 +106,7 @@ export default {
     },
   },
   methods: {
+    
     async fetchProducts() {
       try {
         const response = await fetch('http://127.0.0.1:8000/api/products/');
@@ -133,9 +151,27 @@ export default {
         alert('Ingresa una cantidad válida');
       }
     },
+    validateStockInput(event, prod) {
+      let value = event.target.value;
+
+      if (prod.exit_stock_unit === 'unit') {
+        // Solo permitir enteros positivos
+        value = value.replace(/\D/g, ''); // Quitar todo lo que no sea dígito
+        prod.stockToAdd = parseInt(value) || 0;
+      } else {
+        // Permitir decimales con hasta 2 cifras
+        value = value.replace(/[^0-9.]/g, '');
+        const parts = value.split('.');
+        if (parts.length > 2) return;
+        if (parts[1]?.length > 2) parts[1] = parts[1].slice(0, 2);
+        prod.stockToAdd = parseFloat(parts.join('.')) || 0;
+      }
+    }
+
   },
   mounted() {
     this.fetchProducts();
   },
+  
 };
 </script>

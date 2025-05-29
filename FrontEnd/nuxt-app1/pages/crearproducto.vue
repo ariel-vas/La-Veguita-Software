@@ -228,6 +228,8 @@ const validarCamposRequeridos = () => {
     errores.value.id_product = 'El campo ID Producto es obligatorio.'
   if (!editado.value.name)
     errores.value.name = 'El campo Nombre es obligatorio.'
+  else if (!/^[\p{L}0-9_\-\s]+$/u.test(editado.value.name))
+    errores.value.name = 'El nombre solo puede contener letras, números, espacios, guiones y guiones bajos.'
   if (!editado.value.category)
     errores.value.category = 'El campo Categoria es obligatorio.'
   if (!editado.value.supplier)

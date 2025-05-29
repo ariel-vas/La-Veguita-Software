@@ -1,29 +1,59 @@
 <template>
   <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
-    <h1 class="text-4xl font-bold text-[#8bc34a]">Sistema de Gestión de Stock</h1>
-    <h2 class="text-2xl font-semibold text-[#8bc34a]">Bienvenido a la aplicación de gestión de stock</h2>
+    <div class="bg-white border border-[#c5e1a5] shadow-md rounded-2xl px-8 py-6 text-center w-full max-w-3xl">
+      <h1 class="text-4xl font-extrabold text-[#689f38] mb-2">Sistema de Gestión de Stock</h1>
+      <h2 class="text-2xl font-medium text-[#8bc34a]">Bienvenido a la aplicación de gestión de stock de La Veguita</h2>
+    </div>
 
-    <!-- Botón con lógica de carga -->
-    <button
-      @click="cargarStock"
-      class="w-80 bg-[#ff9800] hover:bg-orange-500 text-white font-semibold py-6 px-2 rounded-2xl text-center shadow-lg transition duration-300"
-      :disabled="cargando"
-    >
-      <span v-if="!cargando">Actualización diaria de Stock</span>
-      <span v-else class="flex items-center justify-center">
-        <svg class="animate-spin h-6 w-6 text-white mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-        Cargando...
-      </span>
-    </button>
 
-    <!-- Botones normales -->
-    <HomeBox title="Ingreso de Stock Unitario" to="/agregarstock" />
-    <HomeBox title="Salida de Stock Unitario" to="/quitarstock" />
-    <HomeBox title="Crear un producto" to="/crearproducto" />
+    <!-- Actualización diaria de Stock -->
+    <div class="bg-orange-100 border border-orange-300 rounded-2xl p-6 w-full max-w-3xl shadow-md">
+      <h2 class="text-2xl font-semibold text-orange-700 mb-4">Actualización de Stock</h2>
+      <div class="flex justify-center">
+        <button
+          @click="cargarStock"
+          class="w-80 bg-[#ff9800] hover:bg-orange-500 text-white font-semibold py-6 px-2 rounded-2xl text-center shadow-lg transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+          :disabled="cargando"
+        >
+          <span v-if="!cargando">Actualización diaria de Stock</span>
+          <span v-else class="flex items-center justify-center">
+            <svg class="animate-spin h-6 w-6 text-white mr-2" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Cargando...
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sección: Stock por Lote -->
+    <div class="bg-green-100 border border-green-300 rounded-2xl p-6 w-full max-w-3xl shadow-md">
+      <h2 class="text-2xl font-semibold text-green-700 mb-4">Gestión por Lote</h2>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <HomeBox title="Ingreso de Stock por Lote" to="/agregarlote" />
+        <HomeBox title="Salida de Stock por Lote" to="/quitarlote" />
+      </div>
+    </div>
+
+    <!-- Sección: Stock Unitario -->
+    <div class="bg-blue-100 border border-blue-300 rounded-2xl p-6 w-full max-w-3xl shadow-md">
+      <h2 class="text-2xl font-semibold text-blue-700 mb-4">Gestión Unitaria</h2>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <HomeBox title="Ingreso de Stock Unitario" to="/agregarstock" />
+        <HomeBox title="Salida de Stock Unitario" to="/quitarstock" />
+      </div>
+    </div>
+
+    <!-- Crear producto -->
+    <div class="bg-purple-100 border border-purple-300 rounded-2xl p-6 w-full max-w-3xl shadow-md">
+      <h2 class="text-2xl font-semibold text-purple-700 mb-4">Productos</h2>
+      <div class="flex justify-center">
+        <HomeBox title="Crear un producto" to="/crearproducto" />
+      </div>
+    </div>
   </div>
 </template>
 
