@@ -63,15 +63,15 @@ const agregarLote = async () => {
   }
 
   try {
+    // 1. Crear el lote
     const lote = {
-      product: producto.value.name,
+      product: producto.value.id_product,
       quantity: cantidadAgregar.value,
       unit: producto.value.exit_stock_unit,
       entry_date: new Date().toISOString().slice(0, 10),
       expiration_date: fechaVencimiento.value,
     }
 
-    // POST al endpoint de lotes
     const resLote = await fetch('http://127.0.0.1:8000/api/batches/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -80,27 +80,45 @@ const agregarLote = async () => {
 
     if (!resLote.ok) throw new Error('Error al crear lote.')
 
-    // PUT para actualizar stock
-    const nuevoStock = producto.value.stock + cantidadAgregar.value
-    const resProducto = await fetch(`http://127.0.0.1:8000/api/products/${id}/`, {
+    // 2. Actualizar el stock (PUT limpio)
+    const nuevoStock = parseFloat(producto.value.stock) + parseFloat(cantidadAgregar.value)
+
+    const productoActualizado = {
+        id_product: producto.value.id_product,
+        name: producto.value.name,
+        description: producto.value.description,
+        purchase_price: producto.value.purchase_price,
+        sale_price_unit: producto.value.sale_price_unit,
+        sale_price_kilo: producto.value.sale_price_kilo,
+        wholesale_price: producto.value.wholesale_price,
+        wholesale_quantity: producto.value.wholesale_quantity,
+        discount_surcharge: producto.value.discount_surcharge,
+        stock: nuevoStock.toFixed(4),
+        critical_stock: producto.value.critical_stock,
+        entry_stock_unit: producto.value.entry_stock_unit,
+        exit_stock_unit: producto.value.exit_stock_unit,
+        composed_product: producto.value.composed_product,
+        category: producto.value.category, // nombre como string
+        supplier: producto.value.supplier, // nombre como string
+        subcategories: producto.value.subcategories.map(sc => {
+            if (typeof sc === 'string') return sc
+            if (sc.name) return sc.name
+            return ''
+        }).filter(Boolean),
+    }
+    const resProducto = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...producto.value,
-        stock: nuevoStock,
-      }),
+      body: JSON.stringify(productoActualizado),
     })
 
     if (!resProducto.ok) throw new Error('Error al actualizar producto.')
 
-    // Refrescar datos locales
     const actualizado = await resProducto.json()
     producto.value = actualizado
     editado.value = { ...actualizado }
 
     alert('Lote agregado y stock actualizado correctamente.')
-
-    // Reset campos
     cantidadAgregar.value = 0
     fechaVencimiento.value = ''
   } catch (err) {
@@ -109,6 +127,7 @@ const agregarLote = async () => {
   }
 }
 </script>
+
 
 
 
@@ -170,10 +189,10 @@ const agregarLote = async () => {
     <div v-else class="text-gray-600 text-lg">Cargando producto...</div>
 
     <button
-      @click="$router.push('/productos')"
+      @click="$router.push('/agregarlote')"
       class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 mt-4"
 >
-Volver a Productos
+Volver atras
 </button>
 
 </div> </template>

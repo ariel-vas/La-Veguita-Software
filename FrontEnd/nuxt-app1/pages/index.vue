@@ -34,7 +34,6 @@
       <h2 class="text-2xl font-semibold text-green-700 mb-4">Gestión por Lote</h2>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <HomeBox title="Ingreso de Stock por Lote" to="/agregarlote" />
-        <HomeBox title="Salida de Stock por Lote" to="/quitarlote" />
       </div>
     </div>
 
