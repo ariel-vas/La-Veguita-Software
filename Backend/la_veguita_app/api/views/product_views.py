@@ -18,3 +18,17 @@ class ProductRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = "id_product"
+
+class ProductByCategoryView(generics.ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        category_name = self.kwargs['category']
+        return Product.objects.filter(category__name__iexact=category_name)
+    
+class ProductBySubCategoryView(generics.ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        subcategory_name = self.kwargs['subcategory']
+        return Product.objects.filter(subcategories__name__iexact=subcategory_name).distinct()
