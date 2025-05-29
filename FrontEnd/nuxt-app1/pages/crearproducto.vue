@@ -84,7 +84,15 @@
           type="checkbox"
           class="w-5 h-5 sm:col-span-2"
         />
-
+        <!-- Textarea para descripción -->
+        <textarea
+          v-else-if="campo.key === 'description'"
+          v-model="editado[campo.key]"
+          rows="3"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 resize-y"
+          placeholder="Escribe una descripción detallada..."
+          @input="autoResize"
+        ></textarea>
         <!-- Inputs normales -->
         <input
           v-else
@@ -110,7 +118,7 @@
     </div>
 
     <button
-      @click="$router.push('/productos')"
+      @click="$router.push('/')"
       class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
     >
       Volver atrás
@@ -119,29 +127,43 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const camposEditables = [
-  { key: 'id_product', label: 'ID Producto' },
-  { key: 'name', label: 'Nombre' },
+const camposBase = [
+  { key: 'id_product', label: '*ID Producto' , type: 'number'},
+  { key: 'name', label: '*Nombre' },
   { key: 'description', label: 'Descripción' },
-  { key: 'category', label: 'Categoría' },
+  { key: 'category', label: '*Categoría' },
   { key: 'subcategories', label: 'Subcategorías' },
-  { key: 'supplier', label: 'Proveedor' },
-  { key: 'purchase_price', label: 'Precio de compra', type: 'number' },
-  { key: 'sale_price_unit', label: 'Precio venta unidad', type: 'number' },
-  { key: 'sale_price_kilo', label: 'Precio venta kilo', type: 'number' },
-  { key: 'wholesale_price', label: 'Precio mayoreo', type: 'number' },
-  { key: 'wholesale_quantity', label: 'Cantidad mayoreo', type: 'number' },
-  { key: 'discount_surcharge', label: 'Descuento / Recargo', type: 'number' },
-  { key: 'stock', label: 'Stock disponible', type: 'number' },
-  { key: 'critical_stock', label: 'Stock crítico', type: 'number' },
-  { key: 'entry_stock_unit', label: 'Unidad de entrada' },
-  { key: 'exit_stock_unit', label: 'Unidad de salida' },
-  { key: 'composed_product', label: 'Producto compuesto' },
+  { key: 'supplier', label: '*Proveedor' },
+  { key: 'purchase_price', label: '*Precio de compra', type: 'number' },
+  { key: 'wholesale_price', label: '*Precio mayoreo', type: 'number' },
+  { key: 'wholesale_quantity', label: '*Cantidad mayoreo', type: 'number' },
+  { key: 'discount_surcharge', label: '*Descuento / Recargo (%)', type: 'number' },
+  { key: 'stock', label: '*Stock Disponible', type: 'number' },
+  { key: 'critical_stock', label: '*Stock Crítico', type: 'number' },
+  {
+    key: 'entry_stock_unit',
+    label: '*Unidad Entrada Stock',
+    type: 'select',
+    options: [
+      { label: 'Unidad', value: 'unit' },
+      { label: 'Kilo', value: 'kilo' },
+    ]
+  },
+  {
+    key: 'exit_stock_unit',
+    label: '*Unidad Salida Stock',
+    type: 'select',
+    options: [
+      { label: 'Unidad', value: 'unit' },
+      { label: 'Kilo', value: 'kilo' },
+    ]
+  },
+  { key: 'composed_product', label: 'Producto Compuesto', type: 'checkbox' },
 ]
 
 const editado = ref({
@@ -152,16 +174,29 @@ const editado = ref({
   subcategories: [],
   supplier: '',
   purchase_price: '',
-  sale_price_unit: '',
-  sale_price_kilo: '',
+  sale_price_unit: 0,
+  sale_price_kilo: 0,
   wholesale_price: '',
   wholesale_quantity: '',
-  discount_surcharge: '',
+  discount_surcharge: 0,
   stock: '',
   critical_stock: '',
   entry_stock_unit: '',
   exit_stock_unit: '',
   composed_product: false,
+})
+
+const camposEditables = computed(() => {
+  const precioSalida =
+    editado.value.exit_stock_unit === 'kilo'
+      ? { key: 'sale_price_kilo', label: 'Precio venta kilo', type: 'number' }
+      : { key: 'sale_price_unit', label: 'Precio venta unidad', type: 'number' }
+
+  const insertIndex = camposBase.findIndex(c => c.key === 'exit_stock_unit') + 1
+  const before = camposBase.slice(0, insertIndex)
+  const after = camposBase.slice(insertIndex)
+
+  return [...before, precioSalida, ...after]
 })
 
 const categoriasDisponibles = ref([])
@@ -191,6 +226,24 @@ const validarCamposRequeridos = () => {
 
   if (!editado.value.id_product)
     errores.value.id_product = 'El campo ID Producto es obligatorio.'
+  if (!editado.value.name)
+    errores.value.name = 'El campo Nombre es obligatorio.'
+  if (!editado.value.category)
+    errores.value.category = 'El campo Categoria es obligatorio.'
+  if (!editado.value.supplier)
+    errores.value.supplier = 'El campo Proveedor es obligatorio.'
+  if (!editado.value.purchase_price)
+    errores.value.purchase_price = 'El campo Precio de compra es obligatorio.'
+  if (!editado.value.wholesale_price)
+    errores.value.wholesale_price = 'El campo Precio Mayoreo es obligatorio.'
+  if (!editado.value.wholesale_quantity)
+    errores.value.wholesale_quantity = 'El campo Cantidad Mayoreo es obligatorio.'
+  if (!editado.value.discount_surcharge)
+    errores.value.discount_surcharge = 'El campo Descuento / Recargo (%) es obligatorio.'
+  if (!editado.value.stock)
+    errores.value.stock = 'El campo Stock disponible es obligatorio.'
+  if (!editado.value.critical_stock)
+    errores.value.critical_stock = 'El campo Stock Crítico es obligatorio.'
   if (!editado.value.entry_stock_unit)
     errores.value.entry_stock_unit = 'El campo Unidad de entrada es obligatorio.'
   if (!editado.value.exit_stock_unit)
@@ -229,4 +282,11 @@ const agregarSubcategoria = () => {
 const eliminarSubcategoria = (index) => {
   editado.value.subcategories.splice(index, 1)
 }
+const autoResize = (event) => {
+  const el = event.target
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
+}
+
 </script>
+

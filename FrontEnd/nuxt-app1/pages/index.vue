@@ -21,8 +21,8 @@
     </button>
 
     <!-- Botones normales -->
-    <HomeBox title="Ingreso de Stock Manual" to="/agregarstock" />
-    <HomeBox title="Salida de Stock Manual" to="/quitarstock" />
+    <HomeBox title="Ingreso de Stock Unitario" to="/agregarstock" />
+    <HomeBox title="Salida de Stock Unitario" to="/quitarstock" />
     <HomeBox title="Crear un producto" to="/crearproducto" />
   </div>
 </template>
