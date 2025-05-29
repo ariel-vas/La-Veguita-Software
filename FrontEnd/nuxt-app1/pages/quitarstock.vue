@@ -11,12 +11,6 @@
         placeholder="Buscar por ID de producto..."
         class="p-3 w-full text-lg border-2 border-[#8bc34a] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8bc34a]"
       />
-      <!--<button
-        @click="search"
-        class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 w-full"
-      >
-        Buscar
-      </button>-->
     </div>
 
     <!-- Tabla con resultados -->
@@ -33,12 +27,23 @@
         <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
           <td class="py-3 px-6">{{ prod.id_product }}</td>
           <td class="py-3 px-6">{{ prod.name }}</td>
-          <td class="py-3 px-6">{{ parseFloat(prod.stock).toFixed(2) }}</td>
+
+          <!-- Stock actual con tipo de unidad -->
+          <td class="py-3 px-6">
+            {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
+            <span class="text-sm text-gray-600 ml-1">
+              ({{ prod.exit_stock_unit === 'unit' ? 'Unidades' : 'Kilos' }})
+            </span>
+          </td>
+
+          <!-- Input con validación -->
           <td class="py-3 px-6">
             <input
-              v-model.number="prod.stockToRemove"
+              :value="prod.stockToRemove"
+              @input="validateStockRemoveInput($event, prod)"
               type="number"
-              min="1"
+              :step="prod.exit_stock_unit === 'unit' ? '1' : '0.01'"
+              :min="prod.exit_stock_unit === 'unit' ? '1' : '0.01'"
               :max="parseFloat(prod.stock)"
               class="w-24 p-1 border border-[#8bc34a] rounded mr-2"
               placeholder="Cant."
@@ -51,6 +56,7 @@
             </button>
           </td>
         </tr>
+
         <tr v-if="displayedProducts.length === 0">
           <td colspan="4" class="text-center py-4 text-gray-500">No hay productos para mostrar.</td>
         </tr>
@@ -98,9 +104,6 @@ export default {
         this.error = err.message;
       }
     },
-    search() {
-      // El filtrado se maneja en el computed
-    },
     async removeStock(product) {
       if (product.stockToRemove > 0 && parseFloat(product.stock) >= product.stockToRemove) {
         try {
@@ -130,6 +133,22 @@ export default {
         }
       } else {
         alert('Cantidad inválida para quitar');
+      }
+    },
+    validateStockRemoveInput(event, prod) {
+      let value = event.target.value;
+
+      if (prod.exit_stock_unit === 'unit') {
+        // Solo permitir enteros positivos
+        value = value.replace(/\D/g, '');
+        prod.stockToRemove = parseInt(value) || 0;
+      } else {
+        // Permitir decimales con hasta 2 cifras
+        value = value.replace(/[^0-9.]/g, '');
+        const parts = value.split('.');
+        if (parts.length > 2) return;
+        if (parts[1]?.length > 2) parts[1] = parts[1].slice(0, 2);
+        prod.stockToRemove = parseFloat(parts.join('.')) || 0;
       }
     },
   },

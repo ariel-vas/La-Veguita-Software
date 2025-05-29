@@ -25,8 +25,7 @@
         <tr>
           <th class="text-left py-3 px-6">ID</th>
           <th class="text-left py-3 px-6">Nombre</th>
-          <th class="text-left py-3 px-6">Precio</th>
-          <th class="text-left py-3 px-6">Unidad de Venta</th>
+          <th class="text-left py-3 px-6">Stock Actual</th>
           <th class="text-left py-3 px-6">Acción</th>
         </tr>
       </thead>
@@ -34,18 +33,18 @@
         <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
           <td class="py-3 px-6">{{ prod.id_product }}</td>
           <td class="py-3 px-6">{{ prod.name }}</td>
-          <td class="py-3 px-6">${{ prod.exit_stock_unit === 'unit'
-                                  ? Number(prod.sale_price_unit)
-                                  : Number(prod.sale_price_kilo)}}</td>
           <td class="py-3 px-6">
-              {{ prod.exit_stock_unit === 'unit' ? 'Unidad' : 'Kilo' }}
+            {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
+            <span class="text-sm text-gray-600 ml-1">
+              ({{ prod.exit_stock_unit === 'unit' ? 'Unidades' : 'Kilos' }})
+            </span>
           </td>
           <td class="py-3 px-6">
             <button
               @click="navigateToPage(prod.id_product)"
               class="bg-[#ff9800] text-white py-1 px-4 rounded-xl hover:bg-opacity-90 transition duration-300"
             >
-              Ver detalle
+              Ingresar Stock
             </button>
           </td>
         </tr>
@@ -114,7 +113,7 @@ export default {
       }
     },
     navigateToPage(id) {
-      this.$router.push({ path: `/detalle/${id}` });
+      this.$router.push({ path: `/agregarStock/${id}` });
     },
   },
   mounted() {
