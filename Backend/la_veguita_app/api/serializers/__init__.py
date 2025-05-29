@@ -6,3 +6,4 @@ from .sale_serializer import SaleSerializer
 from .batch_serializer import BatchSerializer
 from .sale_detail_serializer import SaleDetailSerializer
 from .supplier_serializer import SupplierSerializer
+from .notification_serializer import NotificationSerializer
