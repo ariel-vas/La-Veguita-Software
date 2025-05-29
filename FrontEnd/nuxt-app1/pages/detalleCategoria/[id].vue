@@ -1,30 +1,13 @@
 <script setup>
-const confirmarEliminacion = ref(false)
-
-const eliminarCategoria = async () => {
-  if (!confirmarEliminacion.value) {
-    confirmarEliminacion.value = true
-    return
-  }
-
-  try {
-    const res = await fetch(`http://127.0.0.1:8000/api/categories/${id}`, {
-      method: 'DELETE',
-    })
-    if (!res.ok) throw new Error('Error al eliminar categoría')
-    alert('Categoría eliminada correctamente')
-    router.push('/categorias')
-  } catch (err) {
-    console.error('Error al eliminar:', err)
-    alert('Error al eliminar la categoría')
-  }
-}
-
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+const confirmarEliminacion = ref(false)
 const categoria = ref(null)
 const editado = ref({})
+const mensaje = ref('')
+const mensajeError = ref(false)
+
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id
@@ -42,6 +25,13 @@ onMounted(async () => {
 })
 
 const guardarCambios = async () => {
+  const soloNumeros = /^[0-9]+$/
+  if (soloNumeros.test(editado.value.name.trim())) {
+    mensaje.value = 'El nombre no puede ser solo números.'
+    mensajeError.value = true
+    return
+  }
+
   try {
     const res = await fetch(`http://127.0.0.1:8000/api/categories/${id}`, {
       method: 'PUT',
@@ -49,11 +39,32 @@ const guardarCambios = async () => {
       body: JSON.stringify(editado.value),
     })
     if (!res.ok) throw new Error('Error al guardar los cambios')
-    alert('Categoría actualizada correctamente')
+    mensaje.value = 'Categoría actualizada correctamente'
+    mensajeError.value = false
     categoria.value = { ...editado.value }
   } catch (err) {
     console.error('Error al guardar:', err)
-    alert('Error al guardar los cambios')
+    mensaje.value = 'Error al guardar los cambios'
+    mensajeError.value = true
+  }
+}
+
+const eliminarCategoria = async () => {
+  if (!confirmarEliminacion.value) {
+    confirmarEliminacion.value = true
+    return
+  }
+
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/categories/${id}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Error al eliminar categoría')
+    alert('Categoría eliminada correctamente')
+    router.push('/categorias')
+  } catch (err) {
+    console.error('Error al eliminar:', err)
+    alert('Error al eliminar la categoría')
   }
 }
 </script>
@@ -74,25 +85,28 @@ const guardarCambios = async () => {
       </div>
 
       <div class="flex justify-center gap-4 mt-4">
-  <button
-    @click="guardarCambios"
-    class="bg-[#8bc34a] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
-  >
-    Guardar Cambios
-  </button>
+        <button
+          @click="guardarCambios"
+          class="bg-[#8bc34a] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
+        >
+          Guardar Cambios
+        </button>
 
-  <button
-    @click="eliminarCategoria"
-    class="bg-red-500 text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
-  >
-    {{ confirmarEliminacion ? 'Confirmar eliminación' : 'Eliminar Categoría' }}
-  </button>
-    </div>
+        <button
+          @click="eliminarCategoria"
+          class="bg-red-500 text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
+        >
+          {{ confirmarEliminacion ? 'Confirmar eliminación' : 'Eliminar Categoría' }}
+        </button>
+      </div>
 
-    <p v-if="confirmarEliminacion" class="text-sm text-red-700 text-center mt-2 max-w-md">
-    Esta acción eliminará la categoría y la desvinculará de todos los productos asociados. Haz clic nuevamente para confirmar.
-    </p>
+      <p v-if="confirmarEliminacion" class="text-sm text-red-700 text-center mt-2 max-w-md">
+        Esta acción eliminará la categoría y la desvinculará de todos los productos asociados. Haz clic nuevamente para confirmar.
+      </p>
 
+      <div v-if="mensaje" :class="mensajeError ? 'text-red-600' : 'text-green-600'" class="text-center font-semibold">
+        {{ mensaje }}
+      </div>
     </div>
 
     <div v-else class="text-gray-600 text-lg">Cargando categoría...</div>
