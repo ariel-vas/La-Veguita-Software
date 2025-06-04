@@ -1,0 +1,8 @@
+# Comandos para instalar:
+# En Windows: pip install -r requirements.txt
+# En Linux: pip3 install -r requirements.txt
+django == 5.2.0
+djangorestframework == 3.16.0
+django-cors-headers
+environs == 14.1.1
+psycopg2-binary==2.9.10
