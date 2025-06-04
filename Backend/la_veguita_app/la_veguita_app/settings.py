@@ -55,6 +55,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Nuxt en modo dev
+    "http://frontend:3000"
 ]
 
 ROOT_URLCONF = 'la_veguita_app.urls'
@@ -86,7 +87,8 @@ DATABASES = {
         'NAME': 'LaVeguitaDB',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'localhost',
+        'HOST': 'db',
+        'PORT': 5432,
     }
 }
 

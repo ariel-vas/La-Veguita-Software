@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./Backend/la_veguita_app
+    volumes:
+      - ./Backend/la_veguita_app:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+    depends_on:
+      - db
+
+  frontend:
+    build: ./FrontEnd/nuxt-app1
+    ports:
+      - "3000:3000"
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: LaVeguitaDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
