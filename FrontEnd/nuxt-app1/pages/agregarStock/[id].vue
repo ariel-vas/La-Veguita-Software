@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const producto = ref(null)
@@ -10,6 +10,25 @@ const id = route.params.id
 
 const cantidadAgregar = ref(0)
 const fechaVencimiento = ref('')
+const modoVencimiento = ref('fecha') // opciones: 'fecha', 'semanas', 'nunca'
+const semanasInput = ref(0)
+const diasInput = ref(0)
+
+watch([modoVencimiento, semanasInput, diasInput], () => {
+  const hoy = new Date()
+
+  if (modoVencimiento.value === 'semanas') {
+    hoy.setDate(hoy.getDate() + semanasInput.value * 7)
+    fechaVencimiento.value = hoy.toISOString().slice(0, 10)
+  } else if (modoVencimiento.value === 'dias') {
+    hoy.setDate(hoy.getDate() + diasInput.value)
+    fechaVencimiento.value = hoy.toISOString().slice(0, 10)
+  } else if (modoVencimiento.value === 'nunca') {
+    hoy.setFullYear(hoy.getFullYear() + 100)
+    fechaVencimiento.value = hoy.toISOString().slice(0, 10)
+  }
+})
+
 
 const camposBase = [
   { key: 'name', label: 'Nombre' },
@@ -164,15 +183,70 @@ const agregarLote = async () => {
             />
             </div>
 
-            <!-- Campo: Fecha de vencimiento -->
+            <!-- Selector de modo de vencimiento -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
-            <label class="font-semibold">Fecha de vencimiento:</label>
-            <input
+              <label class="font-semibold">Tipo de vencimiento:</label>
+              <select
+                v-model="modoVencimiento"
+                class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+              >
+                <option value="fecha">Fecha específica</option>
+                <option value="semanas">Cantidad de semanas</option>
+                <option value="dias">Cantidad de días</option>
+                <option value="nunca">Sin vencimiento</option>
+              </select>
+            </div>
+
+            <!-- Campo: Fecha manual -->
+            <div
+              v-if="modoVencimiento === 'fecha'"
+              class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center"
+            >
+              <label class="font-semibold">Fecha de vencimiento:</label>
+              <input
                 v-model="fechaVencimiento"
                 type="date"
                 class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
-            />
+              />
             </div>
+
+            <!-- Campo: Cantidad de semanas -->
+            <div
+              v-if="modoVencimiento === 'semanas'"
+              class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center"
+            >
+              <label class="font-semibold">Semanas hasta vencimiento:</label>
+              <input
+                v-model="semanasInput"
+                type="number"
+                min="1"
+                class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+                placeholder="Ej: 4 semanas"
+              />
+            </div>
+            <!-- Campo: Cantidad de días -->
+            <div
+              v-if="modoVencimiento === 'dias'"
+              class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center"
+            >
+              <label class="font-semibold">Días hasta vencimiento:</label>
+              <input
+                v-model="diasInput"
+                type="number"
+                min="1"
+                class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+                placeholder="Ej: 30 días"
+              />
+            </div>
+
+            <!-- Info para "nunca" -->
+            <div
+              v-if="modoVencimiento === 'nunca'"
+              class="text-sm text-gray-500 sm:col-span-3 px-2 italic"
+            >
+              Vencimiento fijado a 100 años desde hoy.
+            </div>
+
 
             <!-- Botón para agregar lote -->
             <div class="flex justify-center pt-4">

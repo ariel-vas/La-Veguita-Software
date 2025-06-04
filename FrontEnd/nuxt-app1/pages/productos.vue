@@ -26,8 +26,8 @@
           <th class="text-left py-3 px-6">ID</th>
           <th class="text-left py-3 px-6">Nombre</th>
           <th class="text-left py-3 px-6">Precio</th>
-          <th class="text-left py-3 px-6">Unidad de Venta</th>
           <th class="text-left py-3 px-6">Stock</th>
+          <th class="text-left py-3 px-6">Unidad de Venta</th>
           <th class="text-left py-3 px-6">Acción</th>
         </tr>
       </thead>
@@ -39,11 +39,12 @@
                                   ? Number(prod.sale_price_unit)
                                   : Number(prod.sale_price_kilo)}}</td>
           <td class="py-3 px-6">
-              {{ prod.exit_stock_unit === 'unit' ? 'Unidad' : 'Kilo' }}
-          </td>
-          <td class="py-3 px-6">
             {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
           </td>
+          <td class="py-3 px-6">
+              {{ prod.exit_stock_unit === 'unit' ? 'Unidad' : 'Kilo' }}
+          </td>
+          
           <td class="py-3 px-6">
             <button
               @click="navigateToPage(prod.id_product)"

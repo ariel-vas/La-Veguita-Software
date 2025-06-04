@@ -14,23 +14,33 @@
         <!-- Menú escritorio -->
         <div class="hidden md:flex space-x-4 flex-grow justify-end min-w-0">
           <div v-for="(item, index) in navItems" :key="index" class="flex items-center space-x-2">
+            <!-- Botón de campana mejorado -->
             <button
-              v-if="item.label === 'Productos' && notificaciones.length > 0"
+              v-if="item.label === 'Productos'"
               @click="showAlertModal = true"
-              class="relative text-yellow-500 hover:text-yellow-600 transition"
+              class="relative group"
               title="Productos por vencer"
             >
-              <!-- Icono de campana -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
-              </svg>
+              <div class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
+                  :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
+                
+                <!-- Icono -->
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                    :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'" 
+                    class="w-6 h-6 transition" 
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
+                </svg>
 
-              <!-- Badge si hay notificaciones -->
-              <span v-if="notificaciones.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {{ notificaciones.length }}
-              </span>
+                <!-- Badge -->
+                <span v-if="notificaciones.length > 0"
+                      class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                  {{ notificaciones.length }}
+                </span>
+              </div>
             </button>
+
 
 
             <NuxtLink
@@ -61,23 +71,33 @@
       <div v-if="menuOpen" class="md:hidden flex flex-col mt-2 space-y-2">
         <template v-for="(item, index) in navItems" :key="index">
           <div v-if="!item.action" class="flex items-center space-x-2">
+            <!-- Botón de campana mejorado -->
             <button
-              v-if="item.label === 'Productos' && notificaciones.length > 0"
+              v-if="item.label === 'Productos'"
               @click="showAlertModal = true"
-              class="relative text-yellow-500 hover:text-yellow-600 transition"
+              class="relative group"
               title="Productos por vencer"
             >
-              <!-- Icono de campana -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
-              </svg>
+              <div class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
+                  :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
+                
+                <!-- Icono -->
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                    :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'" 
+                    class="w-6 h-6 transition" 
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
+                </svg>
 
-              <!-- Badge si hay notificaciones -->
-              <span v-if="notificaciones.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {{ notificaciones.length }}
-              </span>
+                <!-- Badge -->
+                <span v-if="notificaciones.length > 0"
+                      class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                  {{ notificaciones.length }}
+                </span>
+              </div>
             </button>
+
             <NuxtLink
               :to="item.link"
               class="hover:bg-[#7cb342] px-3 py-2 rounded-md flex-grow"
@@ -121,19 +141,29 @@
   </div>
 
   <!-- Modal de alerta de vencimiento -->
+  <!-- Modal de alerta de vencimiento -->
   <div v-if="showAlertModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50" @click="showAlertModal = false">
     <div @click.stop class="bg-white p-6 rounded-lg shadow-lg w-96 z-60 absolute top-28 left-1/2 transform -translate-x-1/2 max-h-[70vh] overflow-y-auto">
       <h2 class="text-xl font-bold mb-4">Productos por Vencer</h2>
 
       <ul class="space-y-4 max-h-[300px] overflow-y-auto">
-        <li v-for="noti in notificaciones.filter(n => !ocultarNotificaciones.has(n.id_notification))" :key="noti.id_notification" class="border p-3 rounded-md shadow-sm bg-gray-50">
+        <!-- Si NO hay notificaciones visibles -->
+        <li v-if="notificaciones.filter(n => !ocultarNotificaciones.has(n.id_notification)).length === 0" 
+            class="text-center text-green-600 font-semibold bg-green-50 p-4 rounded shadow">
+          ¡Todo en orden! 🎉
+        </li>
+
+        <!-- Lista de notificaciones activas -->
+        <li v-for="noti in notificaciones.filter(n => !ocultarNotificaciones.has(n.id_notification))" 
+            :key="noti.id_notification" 
+            class="border p-3 rounded-md shadow-sm bg-gray-50">
           <div class="flex justify-between items-center">
             <div>
               <p class="font-semibold">{{ noti.name_product }}</p>
               <p class="text-sm text-gray-600">Vence: {{ new Date(noti.expiration_date).toLocaleDateString() }}</p>
             </div>
             <div class="flex space-x-2">
-              <!-- Ticket -->
+              <!-- Marcar como lista -->
               <button @click="marcarComoLista(noti.id_notification)" title="Marcar como lista" class="text-green-600 hover:text-green-800 text-xl">
                 ✅
               </button>
@@ -149,7 +179,31 @@
       <button @click="showAlertModal = false" class="mt-4 bg-[#8bc34a] text-white px-4 py-2 rounded-md">Cerrar</button>
     </div>
   </div>
-  
+
+  <!-- Notificación flotante inferior derecha -->
+  <transition name="fade-slide">
+    <div
+      v-if="mostrarAviso"
+      class="fixed bottom-6 right-6 bg-white border-l-4 shadow-xl px-5 py-4 rounded-lg max-w-md z-50 flex items-start space-x-3"
+      :class="{
+        'border-yellow-500': notificaciones.length > 0,
+        'border-green-500': notificaciones.length === 0
+      }"
+    >
+      <div class="text-2xl">
+        <span v-if="notificaciones.length > 0" class="text-yellow-500">⚠️</span>
+        <span v-else class="text-green-500">✅</span>
+      </div>
+      <div class="text-gray-800 text-sm">
+        <p class="font-semibold mb-1">
+          {{ notificaciones.length > 0 ? 'Atención' : 'Todo en orden' }}
+        </p>
+        <p>{{ mensajeAviso }}</p>
+      </div>
+    </div>
+  </transition>
+
+
 </template>
 
 <script setup>
@@ -161,6 +215,8 @@ const menuOpen = ref(false)
 const username = ref('')
 const password = ref('')
 const notificaciones = ref([])
+const mostrarAviso = ref(false)
+const mensajeAviso = ref('')
 
 const openLoginModal = () => {
   isLoginModalOpen.value = true
@@ -215,10 +271,25 @@ const cargarNotificaciones = async () => {
     const res = await fetch('http://localhost:8000/api/notifications/')
     const data = await res.json()
     notificaciones.value = data.filter(n => n.state === 'pending')
+
+    // Mostrar aviso
+    const cantidad = notificaciones.value.length
+    mensajeAviso.value =
+      cantidad > 0
+        ? `¡Hay ${cantidad} producto${cantidad === 1 ? '' : 's'} cercan${cantidad === 1 ? 'o' : 'os'} al vencimiento!`
+        : '¡No hay productos cercanos al vencimiento!'
+
+    mostrarAviso.value = true
+
+    // Ocultarlo luego de 6 segundos
+    setTimeout(() => {
+      mostrarAviso.value = false
+    }, 6000)
   } catch (error) {
     console.error('Error cargando notificaciones:', error)
   }
 }
+
 
 onMounted(() => {
   cargarNotificaciones()
@@ -233,4 +304,15 @@ nav {
   right: 0;
   z-index: 50;
 }
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.5s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+
 </style>
