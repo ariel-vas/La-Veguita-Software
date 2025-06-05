@@ -27,11 +27,9 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id_product',
-                  'name',
                   'description',
                   'purchase_price',
-                  'sale_price_unit',
-                  'sale_price_kilo',
+                  'sale_price',
                   'wholesale_price',
                   'wholesale_quantity',
                   'discount_surcharge',
@@ -40,6 +38,7 @@ class ProductSerializer(serializers.ModelSerializer):
                   'entry_stock_unit',
                   'exit_stock_unit',
                   'composed_product',
+                  'checked',
                   'category', 'supplier', 'subcategories']
 
     def to_representation(self, instance):
