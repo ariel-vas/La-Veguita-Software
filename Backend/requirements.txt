@@ -6,3 +6,4 @@ djangorestframework == 3.16.0
 django-cors-headers
 environs == 14.1.1
 psycopg2 == 2.9.10
+pdfplumber == 0.11.6
