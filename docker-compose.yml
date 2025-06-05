@@ -2,18 +2,21 @@ version: '3.8'
 
 services:
   backend:
-    build: ./Backend/la_veguita_app
-    volumes:
-      - ./Backend/la_veguita_app:/app
+    image: motihc/la-veguita-backend:latest
     ports:
       - "8000:8000"
     environment:
       - DEBUG=True
+      - DB_NAME=LaVeguitaDB
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
     depends_on:
       - db
 
   frontend:
-    build: ./FrontEnd/nuxt-app1
+    image: motihc/la-veguita-frontend:latest
     ports:
       - "3000:3000"
 

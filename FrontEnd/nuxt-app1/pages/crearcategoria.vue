@@ -64,7 +64,8 @@ export default {
       }
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/categories/', {
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.apiBase}/api/categories/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

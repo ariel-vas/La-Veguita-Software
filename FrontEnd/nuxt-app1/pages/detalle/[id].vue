@@ -1,169 +1,3 @@
-<script setup>
-import { ref, onMounted, computed  } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-
-const producto = ref(null)
-const editado = ref({})
-const route = useRoute()
-const router = useRouter()
-const id = route.params.id
-
-const categoriasDisponibles = ref([])
-const subcategoriasDisponibles = ref([])
-const proveedoresDisponibles = ref([])
-
-const camposBase = [
-  { key: 'name', label: 'Nombre' },
-  { key: 'description', label: 'Descripción' },
-  { key: 'category', label: 'Categoría' },
-  { key: 'subcategories', label: 'Subcategorías' },
-  { key: 'supplier', label: 'Proveedor' },
-  { key: 'purchase_price', label: 'Precio de compra', type: 'number' },
-  { key: 'wholesale_price', label: 'Precio mayoreo', type: 'number' },
-  { key: 'wholesale_quantity', label: 'Cantidad mayoreo', type: 'number' },
-  { key: 'discount_surcharge', label: 'Descuento / Recargo', type: 'number' },
-  { key: 'stock', label: 'Stock disponible', type: 'number' },
-  { key: 'critical_stock', label: 'Stock crítico', type: 'number' },
-  {
-    key: 'entry_stock_unit',
-    label: 'Unidad entrada stock',
-    type: 'select',
-    options: [
-      { label: 'Unidad', value: 'unit' },
-      { label: 'Kilo', value: 'kilo' },
-    ]
-  },
-  {
-    key: 'exit_stock_unit',
-    label: 'Unidad salida stock',
-    type: 'select',
-    options: [
-      { label: 'Unidad', value: 'unit' },
-      { label: 'Kilo', value: 'kilo' },
-    ]
-  },
-  { key: 'composed_product', label: 'Producto compuesto', type: 'checkbox' },
-]
-const camposEditables = computed(() => {
-  const precioSalida =
-    editado.value.exit_stock_unit === 'kilo'
-      ? { key: 'sale_price_kilo', label: 'Precio venta kilo', type: 'number' }
-      : { key: 'sale_price_unit', label: 'Precio venta unidad', type: 'number' }
-
-  const insertIndex = camposBase.findIndex(c => c.key === 'exit_stock_unit') + 1
-  const before = camposBase.slice(0, insertIndex)
-  const after = camposBase.slice(insertIndex)
-
-  return [...before, precioSalida, ...after]
-})
-const confirmarEliminacion = ref(false)
-const errores = ref({})
-const validarCamposRequeridos = () => {
-  errores.value = {}
-  if (!editado.value.name)
-    errores.value.name = 'El campo Nombre es obligatorio.'
-  else if (!/^[\p{L}0-9_\-\s]+$/u.test(editado.value.name))
-    errores.value.name = 'El nombre solo puede contener letras, números, espacios, guiones y guiones bajos.'
-  if (!editado.value.category)
-    errores.value.category = 'El campo Categoria es obligatorio.'
-  if (!editado.value.supplier)
-    errores.value.supplier = 'El campo Proveedor es obligatorio.'
-  if (!editado.value.purchase_price)
-    errores.value.purchase_price = 'El campo Precio de compra es obligatorio.'
-  if (!editado.value.wholesale_price)
-    errores.value.wholesale_price = 'El campo Precio Mayoreo es obligatorio.'
-  if (!editado.value.wholesale_quantity)
-    errores.value.wholesale_quantity = 'El campo Cantidad Mayoreo es obligatorio.'
-  if (!editado.value.discount_surcharge)
-    errores.value.discount_surcharge = 'El campo Descuento / Recargo (%) es obligatorio.'
-  if (!editado.value.stock)
-    errores.value.stock = 'El campo Stock disponible es obligatorio.'
-  if (!editado.value.critical_stock)
-    errores.value.critical_stock = 'El campo Stock Crítico es obligatorio.'
-  if (!editado.value.entry_stock_unit)
-    errores.value.entry_stock_unit = 'El campo Unidad de entrada es obligatorio.'
-  if (!editado.value.exit_stock_unit)
-    errores.value.exit_stock_unit = 'El campo Unidad de salida es obligatorio.'
-
-  return Object.keys(errores.value).length === 0
-}
-onMounted(async () => {
-  try {
-    const res = await fetch(`http://127.0.0.1:8000/api/products/${id}`)
-    if (!res.ok) throw new Error('Producto no encontrado')
-    const data = await res.json()
-    if (!Array.isArray(data.subcategories)) data.subcategories = []
-    editado.value = { ...data }
-    producto.value = data
-
-    // Cargar listas para selects
-    const [catRes, subcatRes, provRes] = await Promise.all([
-      fetch('http://127.0.0.1:8000/api/categories/'),
-      fetch('http://127.0.0.1:8000/api/subcategories/'),
-      fetch('http://127.0.0.1:8000/api/suppliers/')
-    ])
-    categoriasDisponibles.value = await catRes.json()
-    subcategoriasDisponibles.value = await subcatRes.json()
-    proveedoresDisponibles.value = await provRes.json()
-
-  } catch (error) {
-    console.error('Error al cargar producto:', error)
-  }
-})
-
-const guardarCambios = async () => {
-  if (!validarCamposRequeridos()) {
-    alert('Por favor completa los campos obligatorios.')
-    return
-  }
-  try {
-    const res = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editado.value),
-    })
-    if (!res.ok) throw new Error('Error al guardar los cambios')
-    alert('Producto actualizado correctamente')
-    producto.value = { ...editado.value }
-  } catch (err) {
-    console.error('Error al guardar:', err)
-    alert('Error al guardar los cambios')
-  }
-}
-
-const agregarSubcategoria = () => {
-  editado.value.subcategories.push('')
-}
-
-const eliminarSubcategoria = (index) => {
-  editado.value.subcategories.splice(index, 1)
-}
-
-const eliminarProducto = async () => {
-  if (!confirmarEliminacion.value) {
-    confirmarEliminacion.value = true
-    return
-  }
-
-  try {
-    const res = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
-      method: 'DELETE',
-    })
-    if (!res.ok) throw new Error('Error al eliminar producto')
-    alert('Producto eliminado correctamente')
-    router.push('/productos')
-  } catch (err) {
-    console.error('Error al eliminar:', err)
-    alert('Error al eliminar el producto')
-  }
-}
-const autoResize = (event) => {
-  const el = event.target
-  el.style.height = 'auto'
-  el.style.height = el.scrollHeight + 'px'
-}
-</script>
-
 <template>
   <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
     <h1 class="text-4xl font-bold text-[#8bc34a]">Editar Producto</h1>
@@ -298,3 +132,171 @@ Volver a Productos
 </button>
 
 </div> </template>
+<script setup>
+import { ref, onMounted, computed  } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+const producto = ref(null)
+const editado = ref({})
+const route = useRoute()
+const router = useRouter()
+const id = route.params.id
+
+const categoriasDisponibles = ref([])
+const subcategoriasDisponibles = ref([])
+const proveedoresDisponibles = ref([])
+
+const camposBase = [
+  { key: 'name', label: 'Nombre' },
+  { key: 'description', label: 'Descripción' },
+  { key: 'category', label: 'Categoría' },
+  { key: 'subcategories', label: 'Subcategorías' },
+  { key: 'supplier', label: 'Proveedor' },
+  { key: 'purchase_price', label: 'Precio de compra', type: 'number' },
+  { key: 'wholesale_price', label: 'Precio mayoreo', type: 'number' },
+  { key: 'wholesale_quantity', label: 'Cantidad mayoreo', type: 'number' },
+  { key: 'discount_surcharge', label: 'Descuento / Recargo', type: 'number' },
+  { key: 'stock', label: 'Stock disponible', type: 'number' },
+  { key: 'critical_stock', label: 'Stock crítico', type: 'number' },
+  {
+    key: 'entry_stock_unit',
+    label: 'Unidad entrada stock',
+    type: 'select',
+    options: [
+      { label: 'Unidad', value: 'unit' },
+      { label: 'Kilo', value: 'kilo' },
+    ]
+  },
+  {
+    key: 'exit_stock_unit',
+    label: 'Unidad salida stock',
+    type: 'select',
+    options: [
+      { label: 'Unidad', value: 'unit' },
+      { label: 'Kilo', value: 'kilo' },
+    ]
+  },
+  { key: 'composed_product', label: 'Producto compuesto', type: 'checkbox' },
+]
+const camposEditables = computed(() => {
+  const precioSalida =
+    editado.value.exit_stock_unit === 'kilo'
+      ? { key: 'sale_price_kilo', label: 'Precio venta kilo', type: 'number' }
+      : { key: 'sale_price_unit', label: 'Precio venta unidad', type: 'number' }
+
+  const insertIndex = camposBase.findIndex(c => c.key === 'exit_stock_unit') + 1
+  const before = camposBase.slice(0, insertIndex)
+  const after = camposBase.slice(insertIndex)
+
+  return [...before, precioSalida, ...after]
+})
+const confirmarEliminacion = ref(false)
+const errores = ref({})
+const validarCamposRequeridos = () => {
+  errores.value = {}
+  if (!editado.value.name)
+    errores.value.name = 'El campo Nombre es obligatorio.'
+  else if (!/^[\p{L}0-9_\-\s]+$/u.test(editado.value.name))
+    errores.value.name = 'El nombre solo puede contener letras, números, espacios, guiones y guiones bajos.'
+  if (!editado.value.category)
+    errores.value.category = 'El campo Categoria es obligatorio.'
+  if (!editado.value.supplier)
+    errores.value.supplier = 'El campo Proveedor es obligatorio.'
+  if (!editado.value.purchase_price)
+    errores.value.purchase_price = 'El campo Precio de compra es obligatorio.'
+  if (!editado.value.wholesale_price)
+    errores.value.wholesale_price = 'El campo Precio Mayoreo es obligatorio.'
+  if (!editado.value.wholesale_quantity)
+    errores.value.wholesale_quantity = 'El campo Cantidad Mayoreo es obligatorio.'
+  if (!editado.value.discount_surcharge)
+    errores.value.discount_surcharge = 'El campo Descuento / Recargo (%) es obligatorio.'
+  if (!editado.value.stock)
+    errores.value.stock = 'El campo Stock disponible es obligatorio.'
+  if (!editado.value.critical_stock)
+    errores.value.critical_stock = 'El campo Stock Crítico es obligatorio.'
+  if (!editado.value.entry_stock_unit)
+    errores.value.entry_stock_unit = 'El campo Unidad de entrada es obligatorio.'
+  if (!editado.value.exit_stock_unit)
+    errores.value.exit_stock_unit = 'El campo Unidad de salida es obligatorio.'
+
+  return Object.keys(errores.value).length === 0
+}
+onMounted(async () => {
+  try {
+    const config = useRuntimeConfig();
+    const res = await fetch(`${config.public.apiBase}/api/products/${id}`)
+    if (!res.ok) throw new Error('Producto no encontrado')
+    const data = await res.json()
+    if (!Array.isArray(data.subcategories)) data.subcategories = []
+    editado.value = { ...data }
+    producto.value = data
+
+    // Cargar listas para selects
+    const [catRes, subcatRes, provRes] = await Promise.all([
+      fetch(`${config.public.apiBase}/api/categories/`),
+      fetch(`${config.public.apiBase}/api/subcategories/`),
+      fetch(`${config.public.apiBase}/api/suppliers/`)
+    ])
+    categoriasDisponibles.value = await catRes.json()
+    subcategoriasDisponibles.value = await subcatRes.json()
+    proveedoresDisponibles.value = await provRes.json()
+
+  } catch (error) {
+    console.error('Error al cargar producto:', error)
+  }
+})
+
+const guardarCambios = async () => {
+  if (!validarCamposRequeridos()) {
+    alert('Por favor completa los campos obligatorios.')
+    return
+  }
+  try {
+    const config = useRuntimeConfig();
+    const res = await fetch(`${config.public.apiBase}/api/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editado.value),
+    })
+    if (!res.ok) throw new Error('Error al guardar los cambios')
+    alert('Producto actualizado correctamente')
+    producto.value = { ...editado.value }
+  } catch (err) {
+    console.error('Error al guardar:', err)
+    alert('Error al guardar los cambios')
+  }
+}
+
+const agregarSubcategoria = () => {
+  editado.value.subcategories.push('')
+}
+
+const eliminarSubcategoria = (index) => {
+  editado.value.subcategories.splice(index, 1)
+}
+
+const eliminarProducto = async () => {
+  if (!confirmarEliminacion.value) {
+    confirmarEliminacion.value = true
+    return
+  }
+
+  try {
+    const config = useRuntimeConfig();
+    const res = await fetch(`${config.public.apiBase}/api/products/${id}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Error al eliminar producto')
+    alert('Producto eliminado correctamente')
+    router.push('/productos')
+  } catch (err) {
+    console.error('Error al eliminar:', err)
+    alert('Error al eliminar el producto')
+  }
+}
+const autoResize = (event) => {
+  const el = event.target
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
+}
+</script>
