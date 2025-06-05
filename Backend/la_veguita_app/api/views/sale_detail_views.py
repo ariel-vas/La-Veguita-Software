@@ -311,3 +311,68 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
             "year": year,
             "monthly_report": resultados
         })
+    
+    
+class MonthlyGrossProfitView(APIView):
+    def get(self, request):
+        year = request.query_params.get('year')
+
+        if not year:
+            return Response({"error": "Debes proporcionar 'year'."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            year = int(year)
+        except ValueError:
+            return Response({"error": "'year' debe ser un número entero."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Ingreso por mes (sumar ventas)
+        ingreso_por_mes = SaleDetail.objects.filter(
+            sale_date__year=year
+        ).annotate(
+            mes=ExtractMonth('sale_date')
+        ).values('mes').annotate(
+            ingreso=Coalesce(Sum('subtotal'), 0.0)
+        )
+        ingreso_dict = {item['mes']: float(item['ingreso']) for item in ingreso_por_mes}
+
+        # Costos por mes (sumar cantidad × precio de compra por producto)
+        cantidad_por_mes = Batch.objects.filter(
+            batch_date__year=year
+        ).annotate(
+            mes=ExtractMonth('batch_date')
+        ).values('mes', 'product_id').annotate(
+            cantidad=Coalesce(Sum('quantity'), 0.0)
+        )
+
+        # Calcular costos por mes
+        costo_dict = {}
+        for item in cantidad_por_mes:
+            mes = item['mes']
+            cantidad = float(item['cantidad'])
+            try:
+                producto = Product.objects.get(id=item['product_id'])
+                precio = float(producto.purchase_price)
+                costo = cantidad * precio
+                costo_dict[mes] = costo_dict.get(mes, 0.0) + costo
+            except Product.DoesNotExist:
+                continue
+
+        # Generar resultado por mes
+        resultado = []
+        for mes in range(1, 13):
+            ingreso = ingreso_dict.get(mes, 0.0)
+            costo = costo_dict.get(mes, 0.0)
+            ganancia = ingreso - costo
+
+            resultado.append({
+                "mes_num": mes,
+                "mes_nombre": calendar.month_name[mes],
+                "ingreso_total": round(ingreso, 2),
+                "costo_total": round(costo, 2),
+                "ganancia_bruta": round(ganancia, 2)
+            })
+
+        return Response({
+            "year": year,
+            "monthly_gross_profit": resultado
+        })
