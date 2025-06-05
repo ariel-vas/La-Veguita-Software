@@ -205,10 +205,11 @@ const proveedoresDisponibles = ref([])
 
 onMounted(async () => {
   try {
+    const config = useRuntimeConfig();
     const [catRes, subcatRes, provRes] = await Promise.all([
-      fetch('http://127.0.0.1:8000/api/categories/'),
-      fetch('http://127.0.0.1:8000/api/subcategories/'),
-      fetch('http://127.0.0.1:8000/api/suppliers/'),
+      fetch(`${config.public.apiBase}/api/categories/`),
+      fetch(`${config.public.apiBase}/api/subcategories/`),
+      fetch(`${config.public.apiBase}/api/suppliers/`),
     ])
 
     categoriasDisponibles.value = await catRes.json()
@@ -262,7 +263,8 @@ const crearProducto = async () => {
 
   try {
     console.log('Creando producto:', editado.value)
-    const res = await fetch('http://127.0.0.1:8000/api/products/create', {
+    const config = useRuntimeConfig();
+    const res = await fetch(`${config.public.apiBase}/api/products/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editado.value),

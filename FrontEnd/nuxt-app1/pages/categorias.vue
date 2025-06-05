@@ -72,7 +72,8 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/categories/');
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.apiBase}/api/categories/`);
         if (!response.ok) throw new Error('Error cargando categorías');
         const data = await response.json();
         this.categories = data;
