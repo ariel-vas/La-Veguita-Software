@@ -85,7 +85,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'LaVeguitaDB',
         'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
     }
 }
