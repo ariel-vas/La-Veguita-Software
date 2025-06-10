@@ -32,17 +32,18 @@
     <!-- Sección: Stock por Lote -->
     <div class="bg-green-100 border border-green-300 rounded-2xl p-6 w-full max-w-3xl shadow-md">
       <h2 class="text-2xl font-semibold text-green-700 mb-4">Gestión por Lote</h2>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <HomeBox title="Ingreso de Stock por Lote" to="/agregarlote" />
+      <div class="flex justify-center">
+        <HomeBox  title="Ingreso de Stock por Lote" to="/agregarlote" />
       </div>
     </div>
 
     <!-- Sección: Stock Unitario -->
     <div class="bg-blue-100 border border-blue-300 rounded-2xl p-6 w-full max-w-3xl shadow-md">
       <h2 class="text-2xl font-semibold text-blue-700 mb-4">Gestión Unitaria</h2>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <HomeBox title="Ingreso de Stock Unitario" to="/agregarstock" />
-        <HomeBox title="Salida de Stock Unitario" to="/quitarstock" />
+      
+      <div class="flex flex-col md:flex-row justify-center gap-4">
+        <HomeBox class="w-full md:w-auto" title="Ingreso de Stock Unitario" to="/agregarstock" />
+        <HomeBox class="w-full md:w-auto" title="Salida de Stock Unitario" to="/quitarstock" />
       </div>
     </div>
 

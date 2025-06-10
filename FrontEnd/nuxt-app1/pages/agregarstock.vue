@@ -3,7 +3,6 @@
     <h1 class="text-4xl font-bold text-[#8bc34a]">Ingreso Manual de Stock</h1>
     <h2 class="text-2xl font-semibold text-[#8bc34a] mb-6">Busca productos por ID y agrega stock</h2>
 
-    <!-- Búsqueda por ID -->
     <div class="flex flex-col items-center gap-4 mb-6 w-full max-w-sm">
       <input
         v-model="searchId"
@@ -11,19 +10,38 @@
         placeholder="Buscar por ID de producto..."
         class="p-3 w-full text-lg border-2 border-[#8bc34a] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8bc34a]"
       />
+      </div>
 
-      <!--<button
-        @click="search"
-        class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 w-full"
-      >
-        Buscar
-      </button>-->
-      
-    </div>
-
-    <!-- Tabla con resultados -->
     <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
       <thead class="bg-[#8bc34a] text-white">
+        <tr>
+          <th colspan="2" class="text-left py-3 px-6">
+            <label class="block text-white font-semibold mb-2">Filtrar por Categoría</label>
+            <select 
+              v-model="selectedCategory"
+              @change="applyFilters"
+              class="p-2 w-full text-base border-2 border-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white text-[#000000]"
+            >
+              <option value="">Todas las categorías</option>
+              <option v-for="category in categories" :key="category" :value="category">
+                {{ category }}
+              </option>
+            </select>
+          </th>
+          <th colspan="2" class="text-left py-3 px-6">
+            <label class="block text-white font-semibold mb-2">Filtrar por Subcategoría</label>
+            <select 
+              v-model="selectedSubcategory"
+              @change="applyFilters"
+              class="p-2 w-full text-base border-2 border-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white text-[#000000]"
+            >
+              <option value="">Todas las subcategorías</option>
+              <option v-for="subcat in filteredSubcategories" :key="subcat" :value="subcat">
+                {{ subcat }}
+              </option>
+            </select>
+          </th>
+        </tr>
         <tr>
           <th class="text-left py-3 px-6">ID</th>
           <th class="text-left py-3 px-6">Nombre</th>
@@ -40,7 +58,6 @@
           <td class="py-3 px-6">{{ prod.id_product }}</td>
           <td class="py-3 px-6">{{ prod.description }}</td>
 
-          <!-- Stock actual con unidad -->
           <td class="py-3 px-6">
             {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
             <span class="text-sm text-gray-600 ml-1">
@@ -48,7 +65,6 @@
             </span>
           </td>
 
-          <!-- Agregar stock -->
           <td class="py-3 px-6">
             <input
               :value="prod.stockToAdd"
@@ -72,10 +88,8 @@
           <td colspan="4" class="text-center py-4 text-gray-500">No hay productos para mostrar.</td>
         </tr>
       </tbody>
-
     </table>
 
-    <!-- Error -->
     <div v-if="error" class="text-2xl font-semibold text-red-600 mt-6">{{ error }}</div>
     <button
       @click="$router.push('/')"
@@ -92,34 +106,81 @@ export default {
     return {
       searchId: '',
       products: [],
+      allProducts: [], // To store all fetched products for filtering
       error: '',
+      categories: [],
+      subcategories: [],
+      selectedCategory: '',
+      selectedSubcategory: '',
     };
   },
   computed: {
     displayedProducts() {
+      let filtered = this.allProducts;
+
+      // Filter by searchId first
       if (this.searchId) {
-        return this.products.filter(
-          (p) => p.id_product.toString().includes(this.searchId.trim())
+        filtered = filtered.filter(
+          (p) => p.id_product.toString().includes(this.searchId.trim()) ||
+                 p.description.toLowerCase().includes(this.searchId.toLowerCase().trim()) // Added search by description
         );
       }
-      return this.products.slice(0, 20);
+
+      // Then apply category filter
+      if (this.selectedCategory) {
+        filtered = filtered.filter(p => p.category === this.selectedCategory);
+      }
+      
+      // Then apply subcategory filter
+      if (this.selectedSubcategory) {
+        filtered = filtered.filter(p => p.subcategories?.includes(this.selectedSubcategory));
+      }
+      return filtered.slice(0, 20); // Limit to 20 products
     },
+    filteredSubcategories() {
+      // This will return all unique subcategories from all products to allow independent filtering.
+      // If you want subcategories to be dependent on the selected category,
+      // uncomment the `if (!this.selectedCategory) return [];` line below
+      // and adjust the filter accordingly.
+      
+      // if (!this.selectedCategory) return []; 
+
+      const subcategoriesForSelectedCategory = this.allProducts
+        // .filter(p => p.category === this.selectedCategory) // Uncomment this line if you want dependency
+        .flatMap(p => p.subcategories || []);
+      return [...new Set(subcategoriesForSelectedCategory)].filter(Boolean);
+    }
   },
   methods: {
-    
     async fetchProducts() {
       try {
         const config = useRuntimeConfig();
         const response = await fetch(`${config.public.apiBase}/api/products/`);
         if (!response.ok) throw new Error('Error cargando productos');
         const data = await response.json();
-        this.products = data.map((p) => ({ ...p, stockToAdd: 0 }));
+        // Initialize stockToRemove for each product
+        this.allProducts = data.map((p) => ({ ...p, stockToRemove: 0 })); 
+        this.extractCategories();
       } catch (err) {
         this.error = err.message;
       }
     },
+    extractCategories() {
+      this.categories = [...new Set(this.allProducts.map(p => p.category))].filter(Boolean);
+      const allSubcategories = this.allProducts.flatMap(p => p.subcategories || []);
+      this.subcategories = [...new Set(allSubcategories)].filter(Boolean);
+    },
+    applyFilters() {
+      // The computed property `displayedProducts` handles filtering automatically
+      // when selectedCategory or selectedSubcategory changes.
+      // Resetting searchId if filters are applied, for a cleaner experience
+      this.searchId = ''; 
+    },
+    // The search method is no longer strictly necessary as filtering is reactive
+    // but can be kept if you have specific search button logic.
     search() {
-      // El filtrado se realiza en el computed
+      // The filtering is now handled reactively by the computed property `displayedProducts`
+      // based on changes in `searchId`.
     },
     async addStock(product) {
       if (product.stockToAdd > 0) {
@@ -141,8 +202,13 @@ export default {
 
           if (!response.ok) throw new Error('Error al actualizar el stock');
 
-          product.stock = nuevoStock.toFixed(4);
-          product.stockToAdd = 0;
+          // Find the product in allProducts and update its stock
+          const index = this.allProducts.findIndex(p => p.id_product === product.id_product);
+          if (index !== -1) {
+            this.allProducts[index].stock = nuevoStock.toFixed(4);
+            this.allProducts[index].stockToAdd = 0; // Reset stockToAdd after successful update
+          }
+          
           alert(`Stock actualizado correctamente para ${product.description}`);
         } catch (error) {
           console.error(error);
@@ -156,23 +222,28 @@ export default {
       let value = event.target.value;
 
       if (prod.exit_stock_unit === 'unit') {
-        // Solo permitir enteros positivos
-        value = value.replace(/\D/g, ''); // Quitar todo lo que no sea dígito
+        value = value.replace(/\D/g, ''); 
         prod.stockToAdd = parseInt(value) || 0;
       } else {
-        // Permitir decimales con hasta 2 cifras
         value = value.replace(/[^0-9.]/g, '');
         const parts = value.split('.');
-        if (parts.length > 2) return;
-        if (parts[1]?.length > 2) parts[1] = parts[1].slice(0, 2);
-        prod.stockToAdd = parseFloat(parts.join('.')) || 0;
+        if (parts.length > 2) {
+          value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        if (parts[1] && parts[1].length > 2) {
+          value = parts[0] + '.' + parts[1].slice(0, 2);
+        }
+        prod.stockToAdd = parseFloat(value) || 0;
       }
+      event.target.value = prod.stockToAdd === 0 ? '' : prod.stockToAdd; // Update input field
     }
-
   },
   mounted() {
     this.fetchProducts();
   },
-  
 };
 </script>
+
+<style scoped>
+/* No changes needed in styles based on the request */
+</style>
