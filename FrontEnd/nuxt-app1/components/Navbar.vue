@@ -206,94 +206,95 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+  import { ref, onMounted } from 'vue'
 
-const isLoginModalOpen = ref(false)
-const showAlertModal = ref(false)
-const menuOpen = ref(false)
-const username = ref('')
-const password = ref('')
-const notificaciones = ref([])
-const mostrarAviso = ref(false)
-const mensajeAviso = ref('')
+  const isLoginModalOpen = ref(false)
+  const showAlertModal = ref(false)
+  const menuOpen = ref(false)
+  const username = ref('')
+  const password = ref('')
+  const notificaciones = ref([])
+  const mostrarAviso = ref(false)
+  const mensajeAviso = ref('')
 
-const openLoginModal = () => {
-  isLoginModalOpen.value = true
-}
-const closeLoginModal = () => {
-  isLoginModalOpen.value = false
-}
-const handleLogin = () => {
-  console.log('Usuario:', username.value)
-  console.log('Contraseña:', password.value)
-  closeLoginModal()
-}
-const togglePasswordRecovery = () => {
-  console.log('Recuperación de Contraseña')
-}
-const toggleMenu = () => {
-  menuOpen.value = !menuOpen.value
-}
-const ocultarNotificaciones = ref(new Set())
-const marcarComoLista = async (id_notification) => {
-  const fecha = new Date().toISOString()
-  try {
-    await fetch(`${config.public.apiBase}/api/notifications/${id_notification}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        state: 'ready',
-        date_of_completion: fecha
+  const openLoginModal = () => {
+    isLoginModalOpen.value = true
+  }
+  const closeLoginModal = () => {
+    isLoginModalOpen.value = false
+  }
+  const handleLogin = () => {
+    console.log('Usuario:', username.value)
+    console.log('Contraseña:', password.value)
+    closeLoginModal()
+  }
+  const togglePasswordRecovery = () => {
+    console.log('Recuperación de Contraseña')
+  }
+  const toggleMenu = () => {
+    menuOpen.value = !menuOpen.value
+  }
+  const ocultarNotificaciones = ref(new Set())
+  const marcarComoLista = async (id_notification) => {
+    const fecha = new Date().toISOString()
+    try {
+      const config = useRuntimeConfig()
+      await fetch(`${config.public.apiBase}/api/notifications/${id_notification}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          state: 'ready',
+          date_of_completion: fecha
+        })
       })
-    })
-    // Remueve de la lista luego de actualizar
-    notificaciones.value = notificaciones.value.filter(n => n.id_notification !== id_notification)
-  } catch (error) {
-    console.error('Error actualizando notificación:', error)
+      // Remueve de la lista luego de actualizar
+      notificaciones.value = notificaciones.value.filter(n => n.id_notification !== id_notification)
+    } catch (error) {
+      console.error('Error actualizando notificación:', error)
+    }
   }
-}
 
 
-const posponerNotificacion = (id_notification) => {
-  ocultarNotificaciones.value.add(id_notification)
-}
-
-const navItems = [
-  { label: 'Productos', link: '/productos' },
-  { label: 'Categorias', link: '/categorias' },
-  { label: 'Sub-Categorias', link: '/subcategorias' },
-  { label: 'Ingresar', link: 'javascript:void(0)', action: openLoginModal }
-]
-
-const cargarNotificaciones = async () => {
-  try {
-    const calcularNotis = await fetch(`${config.public.apiBase}/batches/expiring/`)
-    const res = await fetch(`${config.public.apiBase}/api/notifications/`)
-    const data = await res.json()
-    notificaciones.value = data.filter(n => n.state === 'pending')
-
-    // Mostrar aviso
-    const cantidad = notificaciones.value.length
-    mensajeAviso.value =
-      cantidad > 0
-        ? `¡Hay ${cantidad} producto${cantidad === 1 ? '' : 's'} cercan${cantidad === 1 ? 'o' : 'os'} al vencimiento!`
-        : '¡No hay productos cercanos al vencimiento!'
-
-    mostrarAviso.value = true
-
-    // Ocultarlo luego de 6 segundos
-    setTimeout(() => {
-      mostrarAviso.value = false
-    }, 6000)
-  } catch (error) {
-    console.error('Error cargando notificaciones:', error)
+  const posponerNotificacion = (id_notification) => {
+    ocultarNotificaciones.value.add(id_notification)
   }
-}
+
+  const navItems = [
+    { label: 'Productos', link: '/productos' },
+    { label: 'Categorias', link: '/categorias' },
+    { label: 'Sub-Categorias', link: '/subcategorias' },
+    { label: 'Ingresar', link: 'javascript:void(0)', action: openLoginModal }
+  ]
+
+  const cargarNotificaciones = async () => {
+    try {
+      const config = useRuntimeConfig()
+      const res = await fetch(`${config.public.apiBase}/api/notifications/`)
+      const data = await res.json()
+      notificaciones.value = data.filter(n => n.state === 'pending')
+
+      // Mostrar aviso
+      const cantidad = notificaciones.value.length
+      mensajeAviso.value =
+        cantidad > 0
+          ? `¡Hay ${cantidad} producto${cantidad === 1 ? '' : 's'} cercan${cantidad === 1 ? 'o' : 'os'} al vencimiento!`
+          : '¡No hay productos cercanos al vencimiento!'
+
+      mostrarAviso.value = true
+
+      // Ocultarlo luego de 6 segundos
+      setTimeout(() => {
+        mostrarAviso.value = false
+      }, 6000)
+    } catch (error) {
+      console.error('Error cargando notificaciones:', error)
+    }
+  }
 
 
-onMounted(() => {
-  cargarNotificaciones()
-})
+  onMounted(() => {
+    cargarNotificaciones()
+  })
 </script>
 
 <style scoped>

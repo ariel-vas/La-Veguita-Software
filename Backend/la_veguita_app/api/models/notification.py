@@ -13,7 +13,7 @@ class Notification(models.Model):
 
     def save(self, *args, **kwargs):
         if self.id_batch:
-            self.name_product = self.id_batch.product.name
+            self.name_product = self.id_batch.product.description
 
             expiration = self.id_batch.expiration_date
             # Si expiration es solo date, conviértelo a datetime

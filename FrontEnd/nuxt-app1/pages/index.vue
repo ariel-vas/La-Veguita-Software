@@ -64,6 +64,13 @@
   const cargando = ref(false)
   const router = useRouter()
   const config = useRuntimeConfig()
+  const cargarNotificaciones = async () => {
+  try {
+    const res = await fetch(`${config.public.apiBase}/api/batches/expiring/`)
+    } catch (error) {
+      console.error('Error recargando notificaciones:', error)
+    }
+  }
   const cargarStock = async () => {
     cargando.value = true
 
@@ -79,4 +86,7 @@
       cargando.value = false
     }
   }
+  onMounted(() => {
+    cargarNotificaciones()
+  })
 </script>
