@@ -86,7 +86,8 @@ export default {
   methods: {
     async fetchProducts() {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/products/');
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.apiBase}/api/products/`);
         if (!response.ok) throw new Error('Error cargando productos');
         const data = await response.json();
         this.products = data;
@@ -104,7 +105,8 @@ export default {
       }
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/products/${this.searchQuery}`);
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.apiBase}/api/products/${this.searchQuery}`);
         if (!response.ok) throw new Error('Producto no encontrado');
         const data = await response.json();
         this.product = data;

@@ -11,5 +11,10 @@ export default defineNuxtConfig({
         { rel: 'icon', href: '/laveguitalogo-removebg-preview.png' }  
       ]
     }
+  },
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://201.188.254.162:8000'
+    }
   }
 })

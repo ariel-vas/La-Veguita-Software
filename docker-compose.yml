@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    image: motihc/la-veguita-backend:latest
+    ports:
+      - "8000:8000"
+    environment:
+      DEBUG: "True"
+      DB_NAME: LaVeguitaDB
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: "5432"
+    depends_on:
+      - db
+    restart: always
+    command: /bin/sh -c "sleep 10 && python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    image: motihc/la-veguita-frontend:latest
+    ports:
+      - "3000:3000"
+    restart: always
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: LaVeguitaDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

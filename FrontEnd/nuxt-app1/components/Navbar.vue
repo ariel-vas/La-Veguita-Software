@@ -239,7 +239,7 @@ const ocultarNotificaciones = ref(new Set())
 const marcarComoLista = async (id_notification) => {
   const fecha = new Date().toISOString()
   try {
-    await fetch(`http://localhost:8000/api/notifications/${id_notification}`, {
+    await fetch(`${config.public.apiBase}/api/notifications/${id_notification}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -268,7 +268,7 @@ const navItems = [
 
 const cargarNotificaciones = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/notifications/')
+    const res = await fetch(`${config.public.apiBase}/api/notifications/`)
     const data = await res.json()
     notificaciones.value = data.filter(n => n.state === 'pending')
 

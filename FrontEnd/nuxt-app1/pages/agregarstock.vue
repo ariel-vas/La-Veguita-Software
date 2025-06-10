@@ -109,7 +109,8 @@ export default {
     
     async fetchProducts() {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/products/');
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.apiBase}/api/products/`);
         if (!response.ok) throw new Error('Error cargando productos');
         const data = await response.json();
         this.products = data.map((p) => ({ ...p, stockToAdd: 0 }));
@@ -129,8 +130,8 @@ export default {
             ...product,
             stock: nuevoStock.toFixed(4),
           };
-
-          const response = await fetch(`http://127.0.0.1:8000/api/products/${product.id_product}`, {
+          const config = useRuntimeConfig();
+          const response = await fetch(`${config.public.apiBase}/api/products/${product.id_product}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
