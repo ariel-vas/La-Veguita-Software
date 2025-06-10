@@ -78,12 +78,12 @@ class Top10ProductsRevenue(APIView):
             except ValueError:
                 return Response({"error": "Mes y año deben ser enteros válidos."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Agrupar y ordenar por cantidad vendida
+        # Agrupar y ordenar por ingresos totales (revenue)
         product_sales = (
             queryset
-            .values('product__id_product', 'product__name')
+            .values('product__id_product', 'product__description')  # Cambiado 'name' por 'description'
             .annotate(total_revenue=Sum('subtotal'))
-            .order_by('-total_sold')[:10]  # TOP 10
+            .order_by('-total_revenue')[:10]  # Corregido: ordenar por total_revenue
         )
 
         return Response({
@@ -116,7 +116,7 @@ class Bottom10ProductsByRevenueView(APIView):
         # Agrupar por producto, sumar subtotal, y ordenar ascendente
         product_sales = (
             queryset
-            .values('product__id_product', 'product__name')
+            .values('product__id_product', 'product__description')
             .annotate(total_revenue=Sum('subtotal'))
             .order_by('total_revenue')[:10]
         )
@@ -148,14 +148,14 @@ class DailySalesReportView(APIView):
             sales
             .values(
                 product_id=F('product__id_product'),
-                product_name=F('product__name'),
+                product_name=F('product__description'),
                 exit_unit=F('product__exit_stock_unit'),
             )
             .annotate(
                 total_quantity=Sum('quantity'),
                 total_subtotal=Sum('subtotal')
             )
-            .order_by('product_name')
+            .order_by('product__description')
         )
 
         return Response({
@@ -165,11 +165,11 @@ class DailySalesReportView(APIView):
 
 class MonthlyRevenueVsCostByProductView(APIView):
     def get(self, request):
-        product_name = request.query_params.get('product_name')
+        product__description = request.query_params.get('product__description')
         year = request.query_params.get('year')
 
-        if not product_name or not year:
-            return Response({"error": "Debes proporcionar 'product_name' y 'year'."}, status=status.HTTP_400_BAD_REQUEST)
+        if not product__description or not year:
+            return Response({"error": "Debes proporcionar 'product__description' y 'year'."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             year = int(year)
@@ -177,7 +177,7 @@ class MonthlyRevenueVsCostByProductView(APIView):
             return Response({"error": "'year' debe ser un número entero."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            product = Product.objects.get(name__iexact=product_name)
+            product = Product.objects.get(name__iexact=product__description)
         except Product.DoesNotExist:
             return Response({"error": "Producto no encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -228,7 +228,7 @@ class MonthlyRevenueVsCostByProductView(APIView):
 
         return Response({
             "product_id": product.id_product,
-            "product_name": product.name,
+            "product__description": product.description,
             "year": year,
             "monthly_report": resultados
         })
@@ -310,4 +310,69 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
             "category": category_name,
             "year": year,
             "monthly_report": resultados
+        })
+    
+    
+class MonthlyGrossProfitView(APIView):
+    def get(self, request):
+        year = request.query_params.get('year')
+
+        if not year:
+            return Response({"error": "Debes proporcionar 'year'."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            year = int(year)
+        except ValueError:
+            return Response({"error": "'year' debe ser un número entero."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Ingreso por mes (sumar ventas)
+        ingreso_por_mes = SaleDetail.objects.filter(
+            sale_date__year=year
+        ).annotate(
+            mes=ExtractMonth('sale_date')
+        ).values('mes').annotate(
+            ingreso=Coalesce(Sum('subtotal'), 0.0)
+        )
+        ingreso_dict = {item['mes']: float(item['ingreso']) for item in ingreso_por_mes}
+
+        # Costos por mes (sumar cantidad × precio de compra por producto)
+        cantidad_por_mes = Batch.objects.filter(
+            batch_date__year=year
+        ).annotate(
+            mes=ExtractMonth('batch_date')
+        ).values('mes', 'product_id').annotate(
+            cantidad=Coalesce(Sum('quantity'), 0.0)
+        )
+
+        # Calcular costos por mes
+        costo_dict = {}
+        for item in cantidad_por_mes:
+            mes = item['mes']
+            cantidad = float(item['cantidad'])
+            try:
+                producto = Product.objects.get(id=item['product_id'])
+                precio = float(producto.purchase_price)
+                costo = cantidad * precio
+                costo_dict[mes] = costo_dict.get(mes, 0.0) + costo
+            except Product.DoesNotExist:
+                continue
+
+        # Generar resultado por mes
+        resultado = []
+        for mes in range(1, 13):
+            ingreso = ingreso_dict.get(mes, 0.0)
+            costo = costo_dict.get(mes, 0.0)
+            ganancia = ingreso - costo
+
+            resultado.append({
+                "mes_num": mes,
+                "mes_nombre": calendar.month_name[mes],
+                "ingreso_total": round(ingreso, 2),
+                "costo_total": round(costo, 2),
+                "ganancia_bruta": round(ganancia, 2)
+            })
+
+        return Response({
+            "year": year,
+            "monthly_gross_profit": resultado
         })
