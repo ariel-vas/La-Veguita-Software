@@ -21,7 +21,7 @@ urlpatterns = [
     path("batches/<int:id_batch>", views.BatchRetrieveUpdateDestroy.as_view(), name="batch-retrieve-update-destroy"),
     path('batches/expiring/', views.BatchExpiringSoonView.as_view()),
     path("sale_details/", views.SaleDetailListCreate.as_view(), name="sale_detail-create-list"),
-    path("sale_details/<int:sale_id>/<int:product_id>/", views.SaleDetailRetrieveUpdateDestroy.as_view(), name="sale_detail-retrieve-update-destroy"),
+    path("sale_details/sale/<int:sale_id>/product/<int:product_id>/", views.SaleDetailRetrieveUpdateDestroy.as_view(), name="sale_detail-retrieve-update-destroy"),
     path('sales/summary/MostSales/', views.Top10ProductsRevenue.as_view()),
     path('sales/summary/LeastSales/', views.Bottom10ProductsByRevenueView.as_view()),
     path('sales/summary/daily-report/', views.DailySalesReportView.as_view()),
