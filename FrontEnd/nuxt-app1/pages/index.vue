@@ -57,26 +57,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import HomeBox from '@/components/HomeBox.vue'
-import { useRouter } from 'vue-router'
+  import { ref } from 'vue'
+  import HomeBox from '@/components/HomeBox.vue'
+  import { useRouter } from 'vue-router'
 
-const cargando = ref(false)
-const router = useRouter()
-const config = useRuntimeConfig()
-const cargarStock = async () => {
-  cargando.value = true
+  const cargando = ref(false)
+  const router = useRouter()
+  const config = useRuntimeConfig()
+  const cargarStock = async () => {
+    cargando.value = true
 
-  try {
-    await fetch(`${config.public.apiBase}/api/stock/importar`, { method: 'POST' })
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    router.push('/')
-    alert('Se cargó el archivo correctamente.')
-  } catch (error) {
-    console.error('Error cargando stock:', error)
-    alert('Hubo un error al cargar el archivo.')
-  } finally {
-    cargando.value = false
+    try {
+      await fetch(`${config.public.apiBase}/api/stock/importar`, { method: 'POST' })
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      router.push('/')
+      alert('Se cargó el archivo correctamente.')
+    } catch (error) {
+      console.error('Error cargando stock:', error)
+      alert('Hubo un error al cargar el archivo.')
+    } finally {
+      cargando.value = false
+    }
   }
-}
 </script>

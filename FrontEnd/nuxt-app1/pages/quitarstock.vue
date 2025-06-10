@@ -26,7 +26,7 @@
       <tbody>
         <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
           <td class="py-3 px-6">{{ prod.id_product }}</td>
-          <td class="py-3 px-6">{{ prod.name }}</td>
+          <td class="py-3 px-6">{{ prod.description }}</td>
 
           <!-- Stock actual con tipo de unidad -->
           <td class="py-3 px-6">
@@ -129,7 +129,7 @@ export default {
 
           product.stock = nuevoStock.toFixed(4);
           product.stockToRemove = 0;
-          alert(`Stock actualizado correctamente para ${product.name}`);
+          alert(`Stock actualizado correctamente para ${product.description}`);
         } catch (error) {
           console.error(error);
           alert('Error al actualizar el stock');

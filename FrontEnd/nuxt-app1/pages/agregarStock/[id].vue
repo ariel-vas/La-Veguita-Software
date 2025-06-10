@@ -113,11 +113,11 @@
     <button
       @click="$router.push('/agregarlote')"
       class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 mt-4"
->
-Volver atras
-</button>
-
-</div> </template>
+    >
+    Volver atras
+    </button>
+  </div> 
+</template>
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -151,7 +151,7 @@ watch([modoVencimiento, semanasInput, diasInput], () => {
 
 
 const camposBase = [
-  { key: 'name', label: 'Nombre' },
+  { key: 'description', label: 'Nombre' },
   { key: 'stock', label: 'Stock disponible', type: 'number' },
   {
     key: 'exit_stock_unit',
@@ -167,8 +167,8 @@ const camposBase = [
 const camposEditables = computed(() => {
   const precioSalida =
     editado.value.exit_stock_unit === 'kilo'
-      ? { key: 'sale_price_kilo', label: 'Precio venta kilo', type: 'number' }
-      : { key: 'sale_price_unit', label: 'Precio venta unidad', type: 'number' }
+      ? { key: 'sale_price', label: 'Precio venta kilo', type: 'number' }
+      : { key: 'sale_price', label: 'Precio venta unidad', type: 'number' }
 
   const insertIndex = camposBase.findIndex(c => c.key === 'exit_stock_unit') + 1
   const before = camposBase.slice(0, insertIndex)
@@ -224,28 +224,27 @@ const agregarLote = async () => {
     const nuevoStock = parseFloat(producto.value.stock) + parseFloat(cantidadAgregar.value)
 
     const productoActualizado = {
-        id_product: producto.value.id_product,
-        name: producto.value.name,
-        description: producto.value.description,
-        purchase_price: producto.value.purchase_price,
-        sale_price_unit: producto.value.sale_price_unit,
-        sale_price_kilo: producto.value.sale_price_kilo,
-        wholesale_price: producto.value.wholesale_price,
-        wholesale_quantity: producto.value.wholesale_quantity,
-        discount_surcharge: producto.value.discount_surcharge,
-        stock: nuevoStock.toFixed(4),
-        critical_stock: producto.value.critical_stock,
-        entry_stock_unit: producto.value.entry_stock_unit,
-        exit_stock_unit: producto.value.exit_stock_unit,
-        composed_product: producto.value.composed_product,
-        category: producto.value.category, // nombre como string
-        supplier: producto.value.supplier, // nombre como string
-        subcategories: producto.value.subcategories.map(sc => {
-            if (typeof sc === 'string') return sc
-            if (sc.name) return sc.name
-            return ''
-        }).filter(Boolean),
-    }
+      id_product: producto.value.id_product,
+      description: producto.value.description,
+      purchase_price: producto.value.purchase_price,
+      sale_price: producto.value.sale_price, // Usa uno de los dos según corresponda
+      wholesale_price: producto.value.wholesale_price,
+      wholesale_quantity: producto.value.wholesale_quantity,
+      discount_surcharge: producto.value.discount_surcharge,
+      stock: nuevoStock.toFixed(4),
+      critical_stock: producto.value.critical_stock,
+      entry_stock_unit: producto.value.entry_stock_unit,
+      exit_stock_unit: producto.value.exit_stock_unit,
+      composed_product: producto.value.composed_product,
+      checked: false,
+      category: producto.value.category,
+      supplier: producto.value.supplier,
+      subcategories: producto.value.subcategories.map(sc => {
+          if (typeof sc === 'string') return sc
+          if (sc.name) return sc.name
+          return ''
+      }).filter(Boolean),
+    };
     const resProducto = await fetch(`${config.public.apiBase}/api/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

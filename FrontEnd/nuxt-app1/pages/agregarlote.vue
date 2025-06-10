@@ -32,7 +32,7 @@
       <tbody>
         <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
           <td class="py-3 px-6">{{ prod.id_product }}</td>
-          <td class="py-3 px-6">{{ prod.name }}</td>
+          <td class="py-3 px-6">{{ prod.description }}</td>
           <td class="py-3 px-6">
             {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
             <span class="text-sm text-gray-600 ml-1">

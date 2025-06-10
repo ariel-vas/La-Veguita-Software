@@ -79,7 +79,7 @@
           type="checkbox"
           class="w-5 h-5 sm:col-span-2"
         />
-        <!-- Textarea para descripción -->
+        <!-- Textarea para descripción 
         <textarea
           v-else-if="campo.key === 'description'"
           v-model="editado[campo.key]"
@@ -87,7 +87,7 @@
           class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 resize-y"
           placeholder="Escribe una descripción detallada..."
           @input="autoResize"
-        ></textarea>
+        ></textarea>-->
         <!-- Input genérico -->
         <input
           v-else
@@ -147,8 +147,7 @@ const subcategoriasDisponibles = ref([])
 const proveedoresDisponibles = ref([])
 
 const camposBase = [
-  { key: 'name', label: 'Nombre' },
-  { key: 'description', label: 'Descripción' },
+  { key: 'description', label: 'Nombre' },
   { key: 'category', label: 'Categoría' },
   { key: 'subcategories', label: 'Subcategorías' },
   { key: 'supplier', label: 'Proveedor' },
@@ -177,12 +176,13 @@ const camposBase = [
     ]
   },
   { key: 'composed_product', label: 'Producto compuesto', type: 'checkbox' },
+  { key: 'checked', label: 'Checkado', type: 'checkbox' },
 ]
 const camposEditables = computed(() => {
   const precioSalida =
     editado.value.exit_stock_unit === 'kilo'
-      ? { key: 'sale_price_kilo', label: 'Precio venta kilo', type: 'number' }
-      : { key: 'sale_price_unit', label: 'Precio venta unidad', type: 'number' }
+      ? { key: 'sale_price', label: 'Precio venta kilo', type: 'number' }
+      : { key: 'sale_price', label: 'Precio venta unidad', type: 'number' }
 
   const insertIndex = camposBase.findIndex(c => c.key === 'exit_stock_unit') + 1
   const before = camposBase.slice(0, insertIndex)
@@ -194,10 +194,10 @@ const confirmarEliminacion = ref(false)
 const errores = ref({})
 const validarCamposRequeridos = () => {
   errores.value = {}
-  if (!editado.value.name)
-    errores.value.name = 'El campo Nombre es obligatorio.'
-  else if (!/^[\p{L}0-9_\-\s]+$/u.test(editado.value.name))
-    errores.value.name = 'El nombre solo puede contener letras, números, espacios, guiones y guiones bajos.'
+  if (!editado.value.description)
+    errores.value.description = 'El campo Nombre es obligatorio.'
+  else if (!/^[\p{L}0-9_\-\s]+$/u.test(editado.value.description))
+    errores.value.description = 'El nombre solo puede contener letras, números, espacios, guiones y guiones bajos.'
   if (!editado.value.category)
     errores.value.category = 'El campo Categoria es obligatorio.'
   if (!editado.value.supplier)
@@ -208,7 +208,7 @@ const validarCamposRequeridos = () => {
     errores.value.wholesale_price = 'El campo Precio Mayoreo es obligatorio.'
   if (!editado.value.wholesale_quantity)
     errores.value.wholesale_quantity = 'El campo Cantidad Mayoreo es obligatorio.'
-  if (!editado.value.discount_surcharge)
+  if (!editado.value.discount_surcharge || editado.value.discount_surcharge === 0)
     errores.value.discount_surcharge = 'El campo Descuento / Recargo (%) es obligatorio.'
   if (!editado.value.stock)
     errores.value.stock = 'El campo Stock disponible es obligatorio.'

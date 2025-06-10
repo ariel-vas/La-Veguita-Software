@@ -141,7 +141,6 @@
   </div>
 
   <!-- Modal de alerta de vencimiento -->
-  <!-- Modal de alerta de vencimiento -->
   <div v-if="showAlertModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50" @click="showAlertModal = false">
     <div @click.stop class="bg-white p-6 rounded-lg shadow-lg w-96 z-60 absolute top-28 left-1/2 transform -translate-x-1/2 max-h-[70vh] overflow-y-auto">
       <h2 class="text-xl font-bold mb-4">Productos por Vencer</h2>
@@ -268,6 +267,7 @@ const navItems = [
 
 const cargarNotificaciones = async () => {
   try {
+    const calcularNotis = await fetch(`${config.public.apiBase}/batches/expiring/`)
     const res = await fetch(`${config.public.apiBase}/api/notifications/`)
     const data = await res.json()
     notificaciones.value = data.filter(n => n.state === 'pending')
