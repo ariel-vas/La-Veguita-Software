@@ -15,3 +15,13 @@ Para cerrarlo y borrar toda la cache
 Solo para cerrarlo y abrirlo desde cero
 -> docker system prune -f
 -> docker-compose down --volumes
+
+
+
+
+make publish
+
+make deploy
+
+Cuando ya este prendido el back
+make migrate

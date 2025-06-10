@@ -15,7 +15,7 @@ services:
     depends_on:
       - db
     restart: always
-    command: /bin/sh -c "sleep 10 && python manage.py runserver 0.0.0.0:8000"
+    command: /bin/sh -c "sleep 20 && python manage.py runserver 0.0.0.0:8000"
 
   frontend:
     image: motihc/la-veguita-frontend:latest
