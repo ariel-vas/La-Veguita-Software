@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
-    <h1 class="text-4xl font-bold text-[#8bc34a]">Crear Categoría</h1>
+    <h1 class="text-4xl font-bold text-[#8bc34a]">Crear Proveedor</h1>
 
     <form
-      @submit.prevent="crearCategoria"
+      @submit.prevent="crearProveedor"
       class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-xl space-y-6"
     >
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
@@ -11,10 +11,10 @@
         <input
           id="name"
           type="text"
-          v-model="categoria.name"
+          v-model="proveedor.name"
           required
           class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
-          placeholder="Ingrese nombre de la categoría"
+          placeholder="Ingrese nombre del proveedor"
           pattern="^(?![0-9]+$).*$"
           title="El nombre no puede ser solo números."
         />
@@ -25,7 +25,7 @@
           type="submit"
           class="bg-[#8bc34a] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
         >
-          Crear Categoría
+          Crear Proveedor
         </button>
       </div>
 
@@ -35,7 +35,7 @@
     </form>
 
     <button
-      @click="$router.push('/categorias')"
+      @click="$router.push('/proveedores')"
       class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
     >
       Volver atrás
@@ -47,38 +47,44 @@
 export default {
   data() {
     return {
-      categoria: {
-        id_category: '',
-        name: '',
+      proveedor: { // Cambiado de 'categoria' a 'proveedor'
+        name: '', // Solo necesitamos 'name' para el POST
       },
       mensaje: '',
       mensajeError: false,
     };
   },
   methods: {
-    async crearCategoria() {
+    async crearProveedor() { // Cambiado de 'crearCategoria' a 'crearProveedor'
       // Validación: no permitir solo números
       const soloNumeros = /^[0-9]+$/;
-      if (soloNumeros.test(this.categoria.name.trim())) {
-        this.mensaje = 'El nombre no puede ser solo números.';
+      if (soloNumeros.test(this.proveedor.name.trim())) {
+        this.mensaje = 'El nombre del proveedor no puede ser solo números.';
         this.mensajeError = true;
         return;
       }
 
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.apiBase}/api/categories/`, {
+        // Endpoint para crear proveedores
+        const response = await fetch(`${config.public.apiBase}/api/suppliers/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(this.categoria),
+          // Envía solo el objeto 'proveedor' que contiene 'name'
+          body: JSON.stringify(this.proveedor),
         });
-        if (!response.ok) throw new Error('Error al crear la categoría');
-        this.mensaje = 'Categoría creada exitosamente';
+
+        if (!response.ok) {
+            // Intenta leer el error del cuerpo de la respuesta si está disponible
+            const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
+            throw new Error(errorData.message || 'Error al crear el proveedor');
+        }
+
+        this.mensaje = 'Proveedor creado exitosamente';
         this.mensajeError = false;
-        this.categoria.id_category = '';
-        this.categoria.name = '';
+        this.proveedor.name = ''; // Limpia el campo después de crear
       } catch (error) {
         this.mensaje = error.message;
         this.mensajeError = true;
@@ -87,3 +93,7 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Los estilos existentes son perfectamente reutilizables */
+</style>    

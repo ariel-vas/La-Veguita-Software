@@ -16,7 +16,9 @@
           v-model="subcategoria.name"
           required
           class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
-          placeholder="Ingrese nombre"
+          placeholder="Ingrese nombre de la subcategoría"
+          pattern="^(?![0-9]+$).*$"
+          title="El nombre no puede ser solo números."
         />
       </div>
 
