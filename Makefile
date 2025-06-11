@@ -3,8 +3,8 @@
 # Variables
 FRONT_PATH=FrontEnd/nuxt-app1
 BACK_PATH=Backend/la_veguita_app
-FRONT_IMAGE=motihc/la-veguita-frontend:latest
-BACK_IMAGE=motihc/la-veguita-backend:latest
+FRONT_IMAGE=fernandosolispaz/la-veguita-frontend:latest
+BACK_IMAGE=fernandosolispaz/la-veguita-backend:latest
 
 .PHONY: all build push deploy migrate
 

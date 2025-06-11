@@ -1,5 +1,5 @@
 from django.utils.timezone import now
-from django.db.models import Sum, F, FloatField, Value
+from django.db.models import Sum, F, FloatField, Value, DecimalField
 from django.db.models.functions import ExtractMonth, Coalesce
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -146,11 +146,7 @@ class DailySalesReportView(APIView):
         # Agrupar por producto
         report = (
             sales
-            .values(
-                product_id=F('product__id_product'),
-                product_name=F('product__description'),
-                exit_unit=F('product__exit_stock_unit'),
-            )
+            .values('product__id_product','product__description','product__exit_stock_unit')
             .annotate(
                 total_quantity=Sum('quantity'),
                 total_subtotal=Sum('subtotal')
@@ -165,11 +161,11 @@ class DailySalesReportView(APIView):
 
 class MonthlyRevenueVsCostByProductView(APIView):
     def get(self, request):
-        product__description = request.query_params.get('product__description')
+        product_description = request.query_params.get('product_description')
         year = request.query_params.get('year')
 
-        if not product__description or not year:
-            return Response({"error": "Debes proporcionar 'product__description' y 'year'."}, status=status.HTTP_400_BAD_REQUEST)
+        if not product_description or not year:
+            return Response({"error": "Debes proporcionar 'product_description' y 'year'."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             year = int(year)
@@ -177,37 +173,36 @@ class MonthlyRevenueVsCostByProductView(APIView):
             return Response({"error": "'year' debe ser un número entero."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            product = Product.objects.get(name__iexact=product__description)
+            product = Product.objects.get(description__iexact=product_description)
         except Product.DoesNotExist:
             return Response({"error": "Producto no encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
         # Obtener ingreso mensual agrupado por mes
         ingreso_por_mes = SaleDetail.objects.filter(
             product=product,
-            sale_date__year=year
+            sale__datetime__year=year
         ).annotate(
-            mes=ExtractMonth('sale_date')
+            mes=ExtractMonth('sale__datetime')
         ).values('mes').annotate(
-            ingreso=Coalesce(Sum('subtotal'), 0)
+            ingreso=Coalesce(Sum('subtotal', output_field=DecimalField()), 0, output_field=DecimalField())
         ).order_by('mes')
 
         # Crear diccionario mes->ingreso para consulta rápida
         ingreso_dict = {item['mes']: float(item['ingreso']) for item in ingreso_por_mes}
 
-        # Obtener cantidad ingresada en bodega agrupada por mes (si tienes fecha en Batch)
+        # Obtener cantidad ingresada en bodega agrupada por mes
         cantidad_por_mes = Batch.objects.filter(
             product=product,
-            batch_date__year=year
+            entry_date__year=year
         ).annotate(
-            mes=ExtractMonth('batch_date')
+            mes=ExtractMonth('entry_date')
         ).values('mes').annotate(
-            cantidad=Coalesce(Sum('quantity'), 0)
+            cantidad=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
         ).order_by('mes')
 
         cantidad_dict = {item['mes']: float(item['cantidad']) for item in cantidad_por_mes}
 
         # Para costo mensual, multiplicamos cantidad por precio compra (supone precio estable)
-        # Si el precio puede cambiar, necesitarías otro enfoque.
         precio_compra_unitario = float(product.purchase_price)
 
         resultados = []
@@ -228,10 +223,10 @@ class MonthlyRevenueVsCostByProductView(APIView):
 
         return Response({
             "product_id": product.id_product,
-            "product__description": product.description,
+            "product_description": product.description,
             "year": year,
             "monthly_report": resultados
-        })
+        }, status=status.HTTP_200_OK)
 
 class MonthlyRevenueVsCostByCategoryView(APIView):
     def get(self, request):
@@ -246,33 +241,33 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
         except ValueError:
             return Response({"error": "'year' debe ser un número entero."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Obtener productos de la categoría
+        # Obtener productos de la categoría (asumiendo que Category tiene un campo 'name')
         products = Product.objects.filter(category__name__iexact=category_name)
         if not products.exists():
             return Response({"error": "No se encontraron productos en esta categoría."}, status=status.HTTP_404_NOT_FOUND)
 
         # IDs de los productos para filtrar ventas y batches
-        product_ids = products.values_list('id', flat=True)
+        product_ids = products.values_list('id_product', flat=True)
 
         # Ingreso mensual por ventas
         ingreso_por_mes = SaleDetail.objects.filter(
-            product_id__in=product_ids,
-            sale_date__year=year
+            product__id_product__in=product_ids,
+            sale__datetime__year=year
         ).annotate(
-            mes=ExtractMonth('sale_date')
+            mes=ExtractMonth('sale__datetime')
         ).values('mes').annotate(
-            ingreso=Coalesce(Sum('subtotal'), 0)
+            ingreso=Coalesce(Sum('subtotal', output_field=DecimalField()), 0, output_field=DecimalField())
         ).order_by('mes')
         ingreso_dict = {item['mes']: float(item['ingreso']) for item in ingreso_por_mes}
 
         # Cantidad mensual ingresada en bodega
         cantidad_por_mes = Batch.objects.filter(
-            product_id__in=product_ids,
-            batch_date__year=year
+            product__id_product__in=product_ids,
+            entry_date__year=year
         ).annotate(
-            mes=ExtractMonth('batch_date')
-        ).values('mes', 'product_id').annotate(
-            cantidad=Coalesce(Sum('quantity'), 0)
+            mes=ExtractMonth('entry_date')
+        ).values('mes', 'product__id_product').annotate(
+            cantidad=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
         )
 
         # Calcular costo mensual: sumar por producto (cantidad * precio compra)
@@ -282,7 +277,7 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
         for item in cantidad_por_mes:
             mes = item['mes']
             cantidad = float(item['cantidad'])
-            producto = products.get(id=item['product_id'])
+            producto = products.get(id_product=item['product__id_product'])
             precio = float(producto.purchase_price)
             costo = cantidad * precio
 
@@ -310,7 +305,7 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
             "category": category_name,
             "year": year,
             "monthly_report": resultados
-        })
+        }, status=status.HTTP_200_OK)
     
     
 class MonthlyGrossProfitView(APIView):

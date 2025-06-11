@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: motihc/la-veguita-backend:latest
+    image: fernandosolispaz/la-veguita-backend:latest
     ports:
       - "8000:8000"
     environment:
@@ -18,7 +18,7 @@ services:
     command: /bin/sh -c "sleep 20 && python manage.py runserver 0.0.0.0:8000"
 
   frontend:
-    image: motihc/la-veguita-frontend:latest
+    image: fernandosolispaz/la-veguita-frontend:latest
     ports:
       - "3000:3000"
     restart: always
