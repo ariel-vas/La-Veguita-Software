@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 from django.utils.timezone import now
 from django.db.models import Sum, DecimalField
 from django.db.models.functions import ExtractMonth, ExtractYear, Coalesce
@@ -164,68 +164,121 @@ class MonthlyRevenueVsCostByProductView(APIView):
     def get(self, request):
         product_description = request.query_params.get('product_description')
         year = request.query_params.get('year')
+        month = request.query_params.get('month')
 
-        if not product_description or not year:
-            return Response({"error": "Debes proporcionar 'product_description' y 'year'."}, status=status.HTTP_400_BAD_REQUEST)
+        if not product_description or not year or not month:
+            return Response({"error": "Debes proporcionar 'product_description', 'year' y 'month'."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             year = int(year)
+            month = int(month)
         except ValueError:
-            return Response({"error": "'year' debe ser un número entero."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "'year' y 'month' deben ser números enteros."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if month < 1 or month > 12:
+            return Response({"error": "'month' debe estar entre 1 y 12."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             product = Product.objects.get(description__iexact=product_description)
         except Product.DoesNotExist:
             return Response({"error": "Producto no encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Obtener ingreso mensual agrupado por mes
+        # Función auxiliar para restar meses
+        def restar_meses(fecha, meses):
+            año = fecha.year
+            mes = fecha.month
+            
+            mes -= meses
+            while mes <= 0:
+                mes += 12
+                año -= 1
+            
+            return datetime(año, mes, 1)
+
+        # Calcular fecha de inicio (12 meses antes del mes/año seleccionado)
+        fecha_fin = datetime(year, month, 1)
+        fecha_inicio = restar_meses(fecha_fin, 11)
+
+        # Obtener ingreso mensual agrupado por año y mes
+        # Calculamos el mes siguiente para el límite superior
+        if fecha_fin.month < 12:
+            fecha_limite = datetime(fecha_fin.year, fecha_fin.month + 1, 1)
+        else:
+            fecha_limite = datetime(fecha_fin.year + 1, 1, 1)
+
         ingreso_por_mes = SaleDetail.objects.filter(
             product=product,
-            sale__datetime__year=year
+            sale__datetime__gte=fecha_inicio,
+            sale__datetime__lt=fecha_limite
         ).annotate(
+            año=ExtractYear('sale__datetime'),
             mes=ExtractMonth('sale__datetime')
-        ).values('mes').annotate(
+        ).values('año', 'mes').annotate(
             ingreso=Coalesce(Sum('subtotal', output_field=DecimalField()), 0, output_field=DecimalField())
-        ).order_by('mes')
+        ).order_by('año', 'mes')
 
-        # Crear diccionario mes->ingreso para consulta rápida
-        ingreso_dict = {item['mes']: float(item['ingreso']) for item in ingreso_por_mes}
+        # Crear diccionario (año, mes)->ingreso para consulta rápida
+        ingreso_dict = {(item['año'], item['mes']): float(item['ingreso']) for item in ingreso_por_mes}
 
-        # Obtener cantidad ingresada en bodega agrupada por mes
+        # Obtener cantidad ingresada en bodega agrupada por año y mes
         cantidad_por_mes = Batch.objects.filter(
             product=product,
-            entry_date__year=year
+            entry_date__gte=fecha_inicio,
+            entry_date__lt=fecha_limite
         ).annotate(
+            año=ExtractYear('entry_date'),
             mes=ExtractMonth('entry_date')
-        ).values('mes').annotate(
+        ).values('año', 'mes').annotate(
             cantidad=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
-        ).order_by('mes')
+        ).order_by('año', 'mes')
 
-        cantidad_dict = {item['mes']: float(item['cantidad']) for item in cantidad_por_mes}
+        cantidad_dict = {(item['año'], item['mes']): float(item['cantidad']) for item in cantidad_por_mes}
 
-        # Para costo mensual, multiplicamos cantidad por precio compra (supone precio estable)
+        # Para costo mensual, multiplicamos cantidad por precio compra
         precio_compra_unitario = float(product.purchase_price)
 
+        # Función auxiliar para sumar meses
+        def sumar_mes(fecha):
+            año = fecha.year
+            mes = fecha.month + 1
+            
+            if mes > 12:
+                mes = 1
+                año += 1
+            
+            return datetime(año, mes, 1)
+
         resultados = []
-        for mes in range(1, 13):
-            ingreso_mes = ingreso_dict.get(mes, 0.0)
-            cantidad_mes = cantidad_dict.get(mes, 0.0)
+        fecha_actual = fecha_inicio
+        
+        # Generar los últimos 12 meses
+        for i in range(12):
+            año_actual = fecha_actual.year
+            mes_actual = fecha_actual.month
+            
+            ingreso_mes = ingreso_dict.get((año_actual, mes_actual), 0.0)
+            cantidad_mes = cantidad_dict.get((año_actual, mes_actual), 0.0)
             costo_mes = cantidad_mes * precio_compra_unitario
             utilidad_mes = ingreso_mes - costo_mes
 
             resultados.append({
-                "mes_num": mes,
-                "mes_nombre": calendar.month_name[mes],
+                "año": año_actual,
+                "mes_num": mes_actual,
+                "mes_nombre": calendar.month_name[mes_actual],
                 "ingreso": round(ingreso_mes, 2),
                 "cantidad_ingresada": round(cantidad_mes, 2),
                 "costo": round(costo_mes, 2),
                 "utilidad": round(utilidad_mes, 2),
             })
+            
+            # Avanzar al siguiente mes
+            fecha_actual = sumar_mes(fecha_actual)
 
         return Response({
             "product_id": product.id_product,
             "product_description": product.description,
-            "year": year,
+            "fecha_inicio": fecha_inicio.strftime("%Y-%m"),
+            "fecha_fin": fecha_fin.strftime("%Y-%m"),
             "monthly_report": resultados
         }, status=status.HTTP_200_OK)
 
@@ -233,14 +286,19 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
     def get(self, request):
         category_name = request.query_params.get('category')
         year = request.query_params.get('year')
+        month = request.query_params.get('month')
 
-        if not category_name or not year:
-            return Response({"error": "Debes proporcionar 'category' y 'year'."}, status=status.HTTP_400_BAD_REQUEST)
+        if not category_name or not year or not month:
+            return Response({"error": "Debes proporcionar 'category', 'year' y 'month'."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             year = int(year)
+            month = int(month)
         except ValueError:
-            return Response({"error": "'year' debe ser un número entero."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "'year' y 'month' deben ser números enteros."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if month < 1 or month > 12:
+            return Response({"error": "'month' debe estar entre 1 y 12."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Obtener productos de la categoría
         products = Product.objects.filter(category__name__iexact=category_name)
@@ -250,24 +308,52 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
         # IDs de los productos para filtrar ventas y batches
         product_ids = products.values_list('id_product', flat=True)
 
+        # Función auxiliar para restar meses
+        def restar_meses(fecha, meses):
+            año = fecha.year
+            mes = fecha.month
+            
+            mes -= meses
+            while mes <= 0:
+                mes += 12
+                año -= 1
+            
+            return datetime(año, mes, 1)
+
+        # Calcular fecha de inicio (12 meses antes del mes/año seleccionado)
+        fecha_fin = datetime(year, month, 1)
+        fecha_inicio = restar_meses(fecha_fin, 11)
+
+        # Calculamos el mes siguiente para el límite superior
+        if fecha_fin.month < 12:
+            fecha_limite = datetime(fecha_fin.year, fecha_fin.month + 1, 1)
+        else:
+            fecha_limite = datetime(fecha_fin.year + 1, 1, 1)
+
         # Ingreso mensual por ventas
         ingreso_por_mes = SaleDetail.objects.filter(
             product__id_product__in=product_ids,
-            sale__datetime__year=year
+            sale__datetime__gte=fecha_inicio,
+            sale__datetime__lt=fecha_limite
         ).annotate(
+            año=ExtractYear('sale__datetime'),
             mes=ExtractMonth('sale__datetime')
-        ).values('mes').annotate(
+        ).values('año', 'mes').annotate(
             ingreso=Coalesce(Sum('subtotal', output_field=DecimalField()), 0, output_field=DecimalField())
-        ).order_by('mes')
-        ingreso_dict = {item['mes']: float(item['ingreso']) for item in ingreso_por_mes}
+        ).order_by('año', 'mes')
+
+        # Crear diccionario (año, mes)->ingreso para consulta rápida
+        ingreso_dict = {(item['año'], item['mes']): float(item['ingreso']) for item in ingreso_por_mes}
 
         # Cantidad mensual ingresada en bodega
         cantidad_por_mes = Batch.objects.filter(
             product__id_product__in=product_ids,
-            entry_date__year=year
+            entry_date__gte=fecha_inicio,
+            entry_date__lt=fecha_limite
         ).annotate(
+            año=ExtractYear('entry_date'),
             mes=ExtractMonth('entry_date')
-        ).values('mes', 'product__id_product').annotate(
+        ).values('año', 'mes', 'product__id_product').annotate(
             cantidad=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
         )
 
@@ -276,35 +362,60 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
         cantidad_dict = {}
 
         for item in cantidad_por_mes:
+            año = item['año']
             mes = item['mes']
+            clave_mes = (año, mes)
             cantidad = float(item['cantidad'])
             producto = products.get(id_product=item['product__id_product'])
             precio = float(producto.purchase_price)
             costo = cantidad * precio
 
-            cantidad_dict[mes] = cantidad_dict.get(mes, 0) + cantidad
-            costo_dict[mes] = costo_dict.get(mes, 0) + costo
+            cantidad_dict[clave_mes] = cantidad_dict.get(clave_mes, 0) + cantidad
+            costo_dict[clave_mes] = costo_dict.get(clave_mes, 0) + costo
+
+        # Función auxiliar para sumar meses
+        def sumar_mes(fecha):
+            año = fecha.year
+            mes = fecha.month + 1
+            
+            if mes > 12:
+                mes = 1
+                año += 1
+            
+            return datetime(año, mes, 1)
 
         # Resultado final por mes
         resultados = []
-        for mes in range(1, 13):
-            ingreso = ingreso_dict.get(mes, 0.0)
-            cantidad = cantidad_dict.get(mes, 0.0)
-            costo = costo_dict.get(mes, 0.0)
+        fecha_actual = fecha_inicio
+        
+        # Generar los últimos 12 meses
+        for i in range(12):
+            año_actual = fecha_actual.year
+            mes_actual = fecha_actual.month
+            clave_mes = (año_actual, mes_actual)
+            
+            ingreso = ingreso_dict.get(clave_mes, 0.0)
+            cantidad = cantidad_dict.get(clave_mes, 0.0)
+            costo = costo_dict.get(clave_mes, 0.0)
             utilidad = ingreso - costo
 
             resultados.append({
-                "mes_num": mes,
-                "mes_nombre": calendar.month_name[mes],
+                "año": año_actual,
+                "mes_num": mes_actual,
+                "mes_nombre": calendar.month_name[mes_actual],
                 "ingreso": round(ingreso, 2),
                 "cantidad_ingresada": round(cantidad, 2),
                 "costo": round(costo, 2),
                 "utilidad": round(utilidad, 2)
             })
+            
+            # Avanzar al siguiente mes
+            fecha_actual = sumar_mes(fecha_actual)
 
         return Response({
             "category": category_name,
-            "year": year,
+            "fecha_inicio": fecha_inicio.strftime("%Y-%m"),
+            "fecha_fin": fecha_fin.strftime("%Y-%m"),
             "monthly_report": resultados
         }, status=status.HTTP_200_OK)
     
