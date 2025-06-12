@@ -251,6 +251,7 @@ const navItems = [
   { label: 'Categorias', link: '/categorias' },
   { label: 'Sub-Categorias', link: '/subcategorias' },
   { label: 'Proveedores', link: '/proveedores' },
+  { label: 'Informes', link: '/informes' },
   { label: 'Ingresar', link: 'javascript:void(0)', action: openLoginModal }
 ]
 
