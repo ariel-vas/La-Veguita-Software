@@ -6,7 +6,7 @@ urlpatterns = [
     path("users/<int:id_user>", views.UserRetrieveUpdateDestroy.as_view(), name="user-retrieve-update-destroy"),
     path('products/', views.ProductListView.as_view(), name='product-list'),
     path('products/create', views.ProductCreateView.as_view(), name='product-create'),
-    path("products/<int:id_product>", views.ProductRetrieveUpdateDestroy.as_view(), name="product-retrieve-update-destroy"),
+    path("products/<str:id_product>", views.ProductRetrieveUpdateDestroy.as_view(), name="product-retrieve-update-destroy"),
     path('products/byCategory/<str:category>/', views.ProductByCategoryView.as_view()),
     path('products/bySubCategory/<str:subcategory>/', views.ProductBySubCategoryView.as_view()),
     path("subcategories/", views.SubCategoryListCreate.as_view(), name="subcategory-create-list"),

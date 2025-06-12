@@ -12,19 +12,18 @@
         </NuxtLink>
 
         <div class="hidden md:flex space-x-4 flex-grow justify-end min-w-0">
-          <!-- Navegación WEB -->
           <div class="flex items-center space-x-2">
             <button
-              @click="showAlertModal = true"
+              @click="openAlertModal"
               class="relative group"
               title="Productos por vencer"
             >
               <div class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
-                  :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
+                   :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
                 <svg xmlns="http://www.w3.org/2000/svg"
-                    :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
-                    class="w-6 h-6 transition"
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
+                     class="w-6 h-6 transition"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
                 </svg>
@@ -37,7 +36,6 @@
 
             <NuxtLink to="/productos" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Productos</NuxtLink>
 
-            <!-- Submenú: Organización de Productos -->
             <div class="relative" @mouseleave="submenuOpen = false">
               <button
                 @click="submenuOpen = !submenuOpen"
@@ -58,16 +56,20 @@
 
               <div
                 v-show="submenuOpen"
-                class="absolute left-0 top-full w-48 bg-white text-black rounded-md shadow-lg z-50"
+                class="absolute left-0 top-full w-59 bg-white text-black rounded-md shadow-lg z-50"
                 @mouseenter="submenuOpen = true"
                 @mouseleave="submenuOpen = false"
               >
                 <NuxtLink to="/categorias" class="block px-8 py-2 hover:bg-gray-100">Categorías</NuxtLink>
                 <NuxtLink to="/subcategorias" class="block px-8 py-2 hover:bg-gray-100">Sub-Categorías</NuxtLink>
                 <NuxtLink to="/proveedores" class="block px-8 py-2 hover:bg-gray-100">Proveedores</NuxtLink>
+                <NuxtLink to="/notificaciones" class="block px-8 py-2 hover:bg-gray-100">Notificaciones</NuxtLink>
+                <NuxtLink to="/crearproducto" class="block px-8 py-2 hover:bg-gray-100">Crear Producto</NuxtLink>
+                <NuxtLink to="/importar-productos" class="block px-8 py-2 hover:bg-gray-100">Importar Productos</NuxtLink>
+                <NuxtLink to="/importar-familias" class="block px-8 py-2 hover:bg-gray-100">Importar Familias</NuxtLink>
               </div>
             </div>
-
+            
             <NuxtLink to="/informes" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Informes</NuxtLink>
 
             <button @click="openLoginModal" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Ingresar</button>
@@ -80,7 +82,7 @@
       </div>
 
       <div v-if="menuOpen" class="md:hidden flex flex-col mt-2 space-y-2">
-        <template v-for="(item, index) in navItems" :key="index">
+        <template v-for="(item, index) in navItemsMobile" :key="index">
           <div v-if="!item.action" class="flex items-center space-x-2">
             <button
               v-if="item.label === 'Productos'"
@@ -147,17 +149,17 @@
     </div>
   </div>
 
-  <div v-if="showAlertModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50" @click="showAlertModal = false">
+  <div v-if="showAlertModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50" @click="closeAlertModal">
     <div @click.stop class="bg-white p-6 rounded-lg shadow-lg w-96 z-60 absolute top-28 left-1/2 transform -translate-x-1/2 max-h-[70vh] overflow-y-auto">
       <h2 class="text-xl font-bold mb-4">Productos por Vencer</h2>
 
       <ul class="space-y-4 max-h-[300px] overflow-y-auto">
-        <li v-if="notificaciones.filter(n => !ocultarNotificaciones.has(n.id_notification)).length === 0"
+        <li v-if="notificaciones.filter(n => n.state === 'pending' && !ocultarNotificaciones.has(n.id_notification)).length === 0"
             class="text-center text-green-600 font-semibold bg-green-50 p-4 rounded shadow">
           ¡Todo en orden! 🎉
         </li>
 
-        <li v-for="noti in notificaciones.filter(n => !ocultarNotificaciones.has(n.id_notification))"
+        <li v-for="noti in displayedNotifications"
             :key="noti.id_notification"
             class="border p-3 rounded-md shadow-sm bg-gray-50">
           <div class="flex justify-between items-center">
@@ -179,12 +181,15 @@
               <button @click="posponerNotificacion(noti.id_notification)" title="Ocultar temporalmente" class="text-gray-500 hover:text-gray-700 text-xl">
                 🕓
               </button>
+              <button @click="esconderNotificacion(noti.id_notification)" title="Ocultar" class="text-gray-500 hover:text-gray-700 text-xl">
+                😴
+              </button>
             </div>
           </div>
         </li>
       </ul>
 
-      <button @click="showAlertModal = false" class="mt-4 bg-[#8bc34a] text-white px-4 py-2 rounded-md">Cerrar</button>
+      <button @click="closeAlertModal" class="mt-4 bg-[#8bc34a] text-white px-4 py-2 rounded-md">Cerrar</button>
     </div>
   </div>
 
@@ -212,17 +217,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
 const isLoginModalOpen = ref(false)
 const showAlertModal = ref(false)
 const menuOpen = ref(false)
 const username = ref('')
 const password = ref('')
-const notificaciones = ref([])
+const notificaciones = ref([]) // Este ref ahora almacenará solo las notificaciones pendientes y ordenadas
 const mostrarAviso = ref(false)
 const mensajeAviso = ref('')
 const submenuOpen = ref(false)
+const ocultarNotificaciones = ref(new Set()) // Para la funcionalidad de posponer
+
+// Computed property para las notificaciones que se mostrarán en el modal, ya filtradas y ordenadas
+const displayedNotifications = computed(() => {
+  return notificaciones.value
+    .filter(n => n.state === 'pending' && !ocultarNotificaciones.value.has(n.id_notification))
+    .sort((a, b) => new Date(a.expiration_date) - new Date(b.expiration_date)); // Ordenar de más cercana a más lejana
+});
+
 
 const openLoginModal = () => {
   isLoginModalOpen.value = true
@@ -241,13 +255,22 @@ const togglePasswordRecovery = () => {
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
 }
-const ocultarNotificaciones = ref(new Set())
+
+// Abre el modal de alerta, también cierra el submenú si está abierto
+const openAlertModal = () => {
+  showAlertModal.value = true;
+  submenuOpen.value = false; // Cierra el submenú al abrir el modal de alerta
+}
+
+const closeAlertModal = () => {
+  showAlertModal.value = false;
+}
 
 const marcarComoLista = async (id_notification) => {
   const fecha = new Date().toISOString()
   try {
     const config = useRuntimeConfig()
-    await fetch(`${config.public.apiBase}/api/notifications/${id_notification}`, {
+    const response = await fetch(`${config.public.apiBase}/api/notifications/${id_notification}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -255,25 +278,56 @@ const marcarComoLista = async (id_notification) => {
         date_of_completion: fecha
       })
     })
-    // Remueve de la lista luego de actualizar
-    notificaciones.value = notificaciones.value.filter(n => n.id_notification !== id_notification)
+    if (!response.ok) throw new Error('Error al actualizar la notificación a ready');
+
+    // Remueve de la lista local después de actualizar en la API
+    notificaciones.value = notificaciones.value.filter(n => n.id_notification !== id_notification);
   } catch (error) {
     console.error('Error actualizando notificación:', error)
   }
 }
 
 const posponerNotificacion = (id_notification) => {
-  ocultarNotificaciones.value.add(id_notification)
+  // Esta funcionalidad se mantiene para "ocultar temporalmente"
+  // Si deseas que "posponer" cambie el estado a 'viewed' en la API, necesitarías otra función PUT
+  ocultarNotificaciones.value.add(id_notification);
+  // Recargamos las notificaciones para que el contador de la campana se actualice si la notificación pospuesta era la única.
+  // Podrías hacer un filtro más eficiente en el computed property si la lista es muy grande
+  // para evitar recargar de la API solo por posponer.
+  // Por ahora, solo la quitamos de la lista visible con 'ocultarNotificaciones'.
 }
+const esconderNotificacion = async (id_notification) => {
+  const fecha = new Date().toISOString()
+  try {
+    const config = useRuntimeConfig()
+    const response = await fetch(`${config.public.apiBase}/api/notifications/${id_notification}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        state: 'posponed',
+        date_of_completion: fecha
+      })
+    })
+    if (!response.ok) throw new Error('Error al actualizar la notificación a posponed');
 
-const navItems = [
+    // Remueve de la lista local después de actualizar en la API
+    notificaciones.value = notificaciones.value.filter(n => n.id_notification !== id_notification);
+  } catch (error) {
+    console.error('Error actualizando notificación:', error)
+  }
+}
+const navItemsMobile = [ // Para la vista móvil, se mantienen individuales
   { label: 'Productos', link: '/productos' },
   { label: 'Categorias', link: '/categorias' },
   { label: 'Sub-Categorias', link: '/subcategorias' },
   { label: 'Proveedores', link: '/proveedores' },
   { label: 'Informes', link: '/informes' },
+  { label: 'Notificaciones', link: '/notificaciones' },
+  { label: 'Importar Productos', link: '/importar-productos' },
+  { label: 'Importar Familias', link: '/importar-familias' },
+  { label: 'Crear Producto', link: '/crearproducto' },
   { label: 'Ingresar', link: 'javascript:void(0)', action: openLoginModal }
-]
+];
 
 const cargarNotificaciones = async () => {
   try {
@@ -281,43 +335,43 @@ const cargarNotificaciones = async () => {
     const res = await fetch(`${config.public.apiBase}/api/notifications/`)
     const data = await res.json()
 
-    // Filtra las notificaciones pendientes
+    // Filtra directamente las notificaciones que están en estado 'pending'
     const pendingNotifications = data.filter(n => n.state === 'pending');
-
-    // Para cada notificación pendiente, carga sus lotes asociados
     const notificationsWithBatches = await Promise.all(
       pendingNotifications.map(async (noti) => {
         try {
           const batchRes = await fetch(`${config.public.apiBase}/api/batches/${noti.id_notification}`);
           if (!batchRes.ok) {
             console.warn(`No se encontraron lotes para la notificación ${noti.id_notification} o error al cargar.`);
-            return { ...noti, batchDetails: [] }; // Retorna la notificación con un array vacío de lotes
+            return { ...noti, batchDetails: [] };
           }
           const batchData = await batchRes.json();
-          // Asegúrate de que batchData es un array, si la API devuelve un solo objeto, conviértelo
           return { ...noti, batchDetails: Array.isArray(batchData) ? batchData : [batchData] };
         } catch (batchError) {
           console.error(`Error al cargar lotes para la notificación ${noti.id_notification}:`, batchError);
-          return { ...noti, batchDetails: [] }; // En caso de error, añade un array vacío de lotes
+          return { ...noti, batchDetails: [] };
         }
       })
     );
 
-    notificaciones.value = notificationsWithBatches;
-
+    // Asigna y ordena las notificaciones pendientes con sus lotes
+    notificaciones.value = notificationsWithBatches.sort((a, b) => {
+      // Ordena de la fecha más cercana a la más lejana
+      return new Date(a.expiration_date) - new Date(b.expiration_date);
+    });
     // Mostrar aviso
-    const cantidad = notificaciones.value.length
+    const cantidad = notificaciones.value.length; // Usa la lista ya filtrada y ordenada
     mensajeAviso.value =
       cantidad > 0
-        ? `¡Hay ${cantidad} producto${cantidad === 1 ? '' : 's'} cercan${cantidad === 1 ? 'o' : 'os'} al vencimiento!`
-        : '¡No hay productos cercanos al vencimiento!'
+        ? `¡Hay ${cantidad} producto${cantidad === 1 ? '' : 's'} cercano${cantidad === 1 ? 'o' : 's'} al vencimiento!`
+        : '¡No hay productos cercanos al vencimiento!';
 
-    mostrarAviso.value = true
+    mostrarAviso.value = true;
 
     // Ocultarlo luego de 6 segundos
     setTimeout(() => {
-      mostrarAviso.value = false
-    }, 6000)
+      mostrarAviso.value = false;
+    }, 6000);
   } catch (error) {
     console.error('Error cargando notificaciones principales:', error)
   }

@@ -6,16 +6,16 @@
     <div class="flex flex-col items-center gap-4 mb-6 w-full max-w-sm">
       <input
         v-model="searchQuery"
-        type="number"
-        placeholder="Buscar producto por ID..."
+        type="text"
+        placeholder="Buscar producto por ID o por Nombre..."
         class="p-3 w-full text-lg border-2 border-[#8bc34a] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8bc34a] text-[#000000]"
       />
-      <button
+      <!--<button
         @click="search"
         class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 w-full"
       >
         Buscar
-      </button>
+      </button>-->
     </div>
 
     <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
@@ -112,7 +112,12 @@ export default {
 
       // Otherwise, filter based on category and subcategory
       let filtered = this.allProducts;
-
+      if (this.searchQuery.trim()) {
+          const q = this.searchQuery.trim().toLowerCase();
+          filtered = filtered.filter(p =>
+            p.id_product.includes(q) || p.description.toLowerCase().includes(q)
+          );
+        }
       if (this.selectedCategory) {
         filtered = filtered.filter(p => p.category === this.selectedCategory);
       }

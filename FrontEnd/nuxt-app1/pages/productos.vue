@@ -5,16 +5,22 @@
     <div class="flex flex-col items-center gap-4 mb-6 w-full max-w-sm">
       <input
         v-model="searchQuery"
-        type="number"
-        placeholder="Buscar producto por ID..."
+        type="text"
+        placeholder="Buscar producto por ID o por Nombre..."
         class="p-3 w-full text-lg border-2 border-[#8bc34a] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8bc34a] text-[#000000]"
       />
-      <button
+      <!-- <button
         @click="search"
         class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 w-full"
       >
         Buscar
       </button>
+      <button
+        @click="applyFilters"
+        class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 w-full"
+      >
+        Filtrar
+      </button>-->
     </div>
 
     <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
@@ -73,7 +79,7 @@
           
           <td class="py-3 px-6">
             <button
-              @click="navigateToPage(prod.id_product)"
+              @click="navigateToPage(String(prod.id_product))"
               class="bg-[#ff9800] text-white py-1 px-4 rounded-xl hover:bg-opacity-90 transition duration-300"
             >
               Ver detalle
@@ -117,7 +123,12 @@ export default {
       if (this.product) return [this.product];
 
       let filtered = this.allProducts;
-
+      if (this.searchQuery.trim()) {
+          const q = this.searchQuery.trim().toLowerCase();
+          filtered = filtered.filter(p =>
+            p.id_product.includes(q) || p.description.toLowerCase().includes(q)
+          );
+        }
       if (this.selectedCategory) {
         filtered = filtered.filter(p => p.category === this.selectedCategory);
       }
@@ -168,7 +179,7 @@ export default {
 
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.apiBase}/api/products/${this.searchQuery}`);
+        const response = await fetch(`${config.public.apiBase}/api/products/${encodeURIComponent(this.searchQuery)}`);
         if (!response.ok) throw new Error('Producto no encontrado');
         const data = await response.json();
         this.product = data;
@@ -177,7 +188,7 @@ export default {
       }
     },
     navigateToPage(id) {
-      this.$router.push({ path: `/detalle/${id}` });
+      this.$router.push({ path: `/detalle/${encodeURIComponent(id)}` });
     },
   },
   mounted() {

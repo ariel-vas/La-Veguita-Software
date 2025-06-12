@@ -140,7 +140,8 @@ const producto = ref(null)
 const editado = ref({})
 const route = useRoute()
 const router = useRouter()
-const id = route.params.id
+const id = encodeURIComponent(route.params.id)
+
 
 const categoriasDisponibles = ref([])
 const subcategoriasDisponibles = ref([])
