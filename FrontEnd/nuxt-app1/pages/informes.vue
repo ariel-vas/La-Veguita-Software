@@ -37,13 +37,13 @@ const selectedReport = ref('')
 
 // Opciones disponibles
 const reportOptions = {
-  informeCierre: '(T) Informe de cierre (últimos 28 días)',
-  productoMasMenos: '(T) Producto/Categoría más y menos vendido',
+  informeCierre: 'Informe de cierre (últimos 28 días)',
+  productoMasMenos: 'Producto/Categoría más y menos vendido',
   ingresosCostos: 'Ingresos v/s Costos',
-  gananciaBruta: 'Ganancia bruta',
-  topRentables: 'Top 5 Productos más rentables',
-  flujoInventario: 'Flujo de inventario + Promedio de salida',
-  varianzaVentas: 'Varianza de ventas % entre meses',
+  //gananciaBruta: 'Ganancia bruta',
+  topRentables: 'Top 10 Productos más rentables',
+  //flujoInventario: 'Flujo de inventario + Promedio de salida',
+  //varianzaVentas: 'Varianza de ventas % entre meses',
 }
 
 // Render dinámico del componente
