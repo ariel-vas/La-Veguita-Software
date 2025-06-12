@@ -84,13 +84,13 @@
           type="checkbox"
           class="w-5 h-5 sm:col-span-2"
         />
-        <input
+        <!-- <input
           v-else-if="campo.key === 'checked'"
           v-model="editado.checked"
           type="checkbox"
           class="w-5 h-5 sm:col-span-2"
         />
-        <!-- Textarea para descripción 
+        Textarea para descripción 
         <textarea
           v-else-if="campo.key === 'description'"
           v-model="editado[campo.key]"
@@ -169,7 +169,6 @@ const camposBase = [
     ]
   },
   { key: 'composed_product', label: 'Producto Compuesto', type: 'checkbox' },
-  { key: 'checked', label: 'Checkeado', type: 'checkbox' },
 ]
 
 const editado = ref({

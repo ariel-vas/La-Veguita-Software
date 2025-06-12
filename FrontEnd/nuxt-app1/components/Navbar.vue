@@ -12,24 +12,22 @@
         </NuxtLink>
 
         <div class="hidden md:flex space-x-4 flex-grow justify-end min-w-0">
-          <div v-for="(item, index) in navItems" :key="index" class="flex items-center space-x-2">
+          <!-- Navegación WEB -->
+          <div class="flex items-center space-x-2">
             <button
-              v-if="item.label === 'Productos'"
               @click="showAlertModal = true"
               class="relative group"
               title="Productos por vencer"
             >
               <div class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
-                   :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
-
+                  :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
                 <svg xmlns="http://www.w3.org/2000/svg"
-                     :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
-                     class="w-6 h-6 transition"
-                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
+                    class="w-6 h-6 transition"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
                 </svg>
-
                 <span v-if="notificaciones.length > 0"
                       class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md">
                   {{ notificaciones.length }}
@@ -37,21 +35,42 @@
               </div>
             </button>
 
-            <NuxtLink
-              v-if="!item.action"
-              :to="item.link"
-              class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition"
-            >
-              {{ item.label }}
-            </NuxtLink>
+            <NuxtLink to="/productos" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Productos</NuxtLink>
 
-            <button
-              v-else
-              @click="item.action"
-              class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition"
-            >
-              {{ item.label }}
-            </button>
+            <!-- Submenú: Organización de Productos -->
+            <div class="relative" @mouseleave="submenuOpen = false">
+              <button
+                @click="submenuOpen = !submenuOpen"
+                class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition flex items-center space-x-1"
+              >
+                <span>Organización de Productos</span>
+                <svg
+                  :class="{ 'rotate-180': submenuOpen }"
+                  class="w-4 h-4 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <div
+                v-show="submenuOpen"
+                class="absolute left-0 top-full w-48 bg-white text-black rounded-md shadow-lg z-50"
+                @mouseenter="submenuOpen = true"
+                @mouseleave="submenuOpen = false"
+              >
+                <NuxtLink to="/categorias" class="block px-8 py-2 hover:bg-gray-100">Categorías</NuxtLink>
+                <NuxtLink to="/subcategorias" class="block px-8 py-2 hover:bg-gray-100">Sub-Categorías</NuxtLink>
+                <NuxtLink to="/proveedores" class="block px-8 py-2 hover:bg-gray-100">Proveedores</NuxtLink>
+              </div>
+            </div>
+
+            <NuxtLink to="/informes" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Informes</NuxtLink>
+
+            <button @click="openLoginModal" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Ingresar</button>
           </div>
         </div>
 
@@ -203,6 +222,7 @@ const password = ref('')
 const notificaciones = ref([])
 const mostrarAviso = ref(false)
 const mensajeAviso = ref('')
+const submenuOpen = ref(false)
 
 const openLoginModal = () => {
   isLoginModalOpen.value = true

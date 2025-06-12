@@ -72,13 +72,13 @@
           <option value="kilo">Kilo</option>
         </select>
 
-        <!-- Checkbox -->
+        <!-- Checkbox
         <input
           v-else-if="campo.type === 'checkbox'"
           v-model="editado[campo.key]"
           type="checkbox"
           class="w-5 h-5 sm:col-span-2"
-        />
+        /> -->
         <!-- Textarea para descripción 
         <textarea
           v-else-if="campo.key === 'description'"
@@ -176,7 +176,6 @@ const camposBase = [
     ]
   },
   { key: 'composed_product', label: 'Producto compuesto', type: 'checkbox' },
-  { key: 'checked', label: 'Checkado', type: 'checkbox' },
 ]
 const camposEditables = computed(() => {
   const precioSalida =
