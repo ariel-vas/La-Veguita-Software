@@ -40,9 +40,9 @@ const reportOptions = {
   informeCierre: 'Informe de cierre (últimos 28 días)',
   productoMasMenos: 'Producto/Categoría más y menos vendido',
   ingresosCostos: 'Ingresos v/s Costos',
-  //gananciaBruta: 'Ganancia bruta',
+  gananciaBruta: 'Ganancia bruta del año',
   topRentables: 'Top 10 Productos más rentables',
-  //flujoInventario: 'Flujo de inventario + Promedio de salida',
+  flujoInventario: 'Flujo de inventario + Promedio de salida',
   //varianzaVentas: 'Varianza de ventas % entre meses',
 }
 

@@ -1,30 +1,40 @@
 <template>
   <div class="flex flex-col gap-6">
-    <h2 class="text-2xl font-semibold text-[#8bc34a]">Ingresos v/s Costos</h2>
+    <h2 class="text-2xl font-semibold text-[#8bc34a]">Ganancia Bruta Anual</h2>
 
-    <!-- Selector -->
-    <div class="flex gap-4">
-      <button
-        @click="modo = 'producto'"
-        :class="modo === 'producto' ? activeBtn : inactiveBtn"
+    <!-- Selector de año -->
+    <div class="flex items-center gap-4">
+      <label for="year-select" class="font-medium">Año:</label>
+      <select
+        id="year-select"
+        v-model="selectedYear"
+        @change="fetchGrossProfitData"
+        class="border border-gray-300 rounded-lg p-2 w-40"
       >
-        Por Producto
-      </button>
-      <button
-        @click="modo = 'categoria'"
-        :class="modo === 'categoria' ? activeBtn : inactiveBtn"
-      >
-        Por Categoría
-      </button>
+        <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+      </select>
+    </div>
+
+    <!-- Datos brutos -->
+    <div v-if="selectedYear && totalIngreso !== null">
+      <p><span class="font-medium">Ingreso total: $</span> {{ formatearNumero(totalIngreso) }}</p>
+      <p><span class="font-medium">Costo total: $</span> {{ formatearNumero(totalCosto) }}</p>
+      <p><span class="font-medium">Ganancia bruta: $</span> {{ formatearNumero(totalGanancia) }}</p>
     </div>
 
     <!-- Gráfico -->
-    <Bar :data="datosGrafico" :options="opcionesGrafico" />
+    <div v-if="chartData.labels.length">
+      <h3 class="text-lg font-medium text-gray-700 mb-2">Ingresos vs Costos</h3>
+      <Bar :data="chartData" :options="chartOptions" />
+    </div>
+    <div v-else class="text-gray-500 italic">
+      No hay datos disponibles para este año.
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -35,59 +45,52 @@ import {
   CategoryScale,
   LinearScale,
 } from 'chart.js'
+import ChartDataLabels from 'chartjs-plugin-datalabels'
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ChartDataLabels)
 
-const modo = ref('producto')
+const selectedYear = ref(new Date().getFullYear())
+const availableYears = Array.from({ length: new Date().getFullYear() - 2020 }, (_, i) => new Date().getFullYear() - i)
 
-const activeBtn =
-  'bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition'
-const inactiveBtn =
-  'bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition'
+const totalIngreso = ref(null)
+const totalCosto = ref(null)
+const totalGanancia = ref(null)
 
-// Datos simulados
-const datosSimulados = {
-  producto: {
-    labels: ['Zapatos', 'Camisas', 'Pantalones', 'Chaquetas', 'Gorros'],
-    ingresos: [150000, 180000, 120000, 90000, 70000],
-    costos: [100000, 120000, 80000, 60000, 50000],
-  },
-  categoria: {
-    labels: ['Ropa', 'Calzado', 'Accesorios'],
-    ingresos: [400000, 250000, 120000],
-    costos: [300000, 180000, 90000],
-  },
+const chartData = ref({ labels: [], datasets: [] })
+
+function formatPeriod(mesNombreIngles) {
+  const meses = {
+    January: 'Enero',
+    February: 'Febrero',
+    March: 'Marzo',
+    April: 'Abril',
+    May: 'Mayo',
+    June: 'Junio',
+    July: 'Julio',
+    August: 'Agosto',
+    September: 'Septiembre',
+    October: 'Octubre',
+    November: 'Noviembre',
+    December: 'Diciembre',
+  }
+  return meses[mesNombreIngles] || mesNombreIngles
 }
 
-const datosGrafico = computed(() => {
-  const datos = datosSimulados[modo.value]
+function formatearNumero(n) {
+  return Number.isInteger(n) ? n.toString() : n.toFixed(2)
+}
 
-  return {
-    labels: datos.labels,
-    datasets: [
-      {
-        label: 'Ingresos',
-        backgroundColor: '#8bc34a',
-        data: datos.ingresos,
-      },
-      {
-        label: 'Costos',
-        backgroundColor: '#f44336',
-        data: datos.costos,
-      },
-    ],
-  }
-})
-
-const opcionesGrafico = {
+const chartOptions = {
   responsive: true,
   plugins: {
-    legend: { position: 'top' },
-    title: {
-      display: true,
-      text: 'Comparación de Ingresos y Costos',
-      color: '#4a4a4a',
-      font: { size: 18 },
+    legend: { position: 'bottom' },
+    title: { display: false },
+    datalabels: {
+      anchor: 'end',
+      align: 'top',
+      formatter: value => (value === 0 ? '0' : value),
+      color: '#000',
+      font: { weight: 'bold' },
     },
   },
   scales: {
@@ -100,4 +103,50 @@ const opcionesGrafico = {
     },
   },
 }
+
+async function fetchGrossProfitData() {
+  try {
+    const config = useRuntimeConfig();
+    const res = await fetch(`${config.public.apiBase}/api/sales/report/gross-profit/?year=${selectedYear.value}`)
+    const data = await res.json()
+
+    const ingresos = data.monthly_gross_profit.map(m => m.ingreso_total)
+    const costos = data.monthly_gross_profit.map(m => m.costo_total)
+    const labels = data.monthly_gross_profit.map(m => formatPeriod(m.mes_nombre))
+
+    totalIngreso.value = ingresos.reduce((sum, val) => sum + val, 0)
+    totalCosto.value = costos.reduce((sum, val) => sum + val, 0)
+    totalGanancia.value = totalIngreso.value - totalCosto.value
+
+    chartData.value = {
+      labels,
+      datasets: [
+        {
+          label: 'Ingresos',
+          backgroundColor: '#4caf50',
+          data: ingresos,
+        },
+        {
+          label: 'Costos',
+          backgroundColor: '#f44336',
+          data: costos,
+        },
+      ],
+    }
+  } catch (err) {
+    console.error('Error al obtener los datos:', err)
+    totalIngreso.value = null
+    totalCosto.value = null
+    totalGanancia.value = null
+    chartData.value = { labels: [], datasets: [] }
+  }
+}
+
+fetchGrossProfitData()
 </script>
+
+<style scoped>
+select {
+  background-color: white;
+}
+</style>
