@@ -9,7 +9,8 @@ class Batch(models.Model):
         KILO = 'kilo'
     
     id_batch = models.AutoField(primary_key=True)
-    quantity = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])
+    starting_quantity = models.DecimalField(max_digits=12, decimal_places=0, validators=[MinValueValidator(0)])
+    quantity = models.DecimalField(max_digits=12, decimal_places=0, validators=[MinValueValidator(0)])
     unit = models.CharField(max_length=4, choices=Unit.choices)
     entry_date = models.DateField()
     expiration_date = models.DateField()

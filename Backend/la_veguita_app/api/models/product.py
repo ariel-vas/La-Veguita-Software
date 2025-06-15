@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator, RegexValidator
+from django.core.validators import MinValueValidator
 from .category import Category
 from .supplier import Supplier
 
@@ -9,17 +9,7 @@ class Product(models.Model):
         UNIT = 'unit'
         KILO = 'kilo'
 
-    id_product = models.CharField(
-        max_length=50,
-        primary_key=True,
-        unique=True,
-        validators=[
-            RegexValidator(
-                regex=r'^\d+$',
-                message='id_product must contain only digits.'
-            )
-        ]
-    )
+    id_product = models.CharField(max_length=50, primary_key=True, unique=True)
     description = models.CharField(max_length=150)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])

@@ -1,6 +1,8 @@
 from django.shortcuts import render
 import os
+from datetime import datetime
 import re
+import xml.etree.ElementTree as ET
 from decimal import Decimal
 from django.http import JsonResponse
 from django.db import transaction
@@ -28,7 +30,7 @@ class DailyStockUpdate(APIView):
     def post(self, request, *args, **kwargs):
 
         # Match filenames like "printer_A_123.txt"
-        pattern = re.compile(r"^printer_A_(\d+)\.out$")
+        pattern = re.compile(r"^(\d+)_(\d+)\.xml$")
 
         try:
             # Get or create singleton row
@@ -71,52 +73,36 @@ class DailyStockUpdate(APIView):
 
     def process_receipt(self, filepath):
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                lines = [line.strip().strip('"') for line in f if line.strip()]
+            with open(filepath, "r", encoding="utf-8") as file:
+                xml_content = file.read()
         except Exception as e:
             raise Exception("Receipt file could not be opened")
 
-        total = None
-        fecha_emision = None
-        hora = None
-        sale_details_data = []
-
-        product_section = False
-        product_line_pattern = re.compile(r'^\s*(\d+)\s+(.+?)\s+(\d+)\s+(\d+)$')
-
+        mod_timestamp = os.path.getmtime(filepath)
+        fecha_emision = datetime.fromtimestamp(mod_timestamp)
+        products = []
         try:
-            for line in lines:
-                if "Fecha de emision" in line:
-                    fecha_emision = line.split(":")[-1].strip()
-                elif "Hora:" in line:
-                    hora = line.split(":")
-                    hora = ":".join(hora[1:4]).strip()
-                elif line.startswith("TOTAL"):
-                    match = re.search(r"\$ *([\d\.]+)", line)
-                    if match:
-                        total = Decimal(match.group(1).replace('.', ''))
-                elif line.startswith("Ctd."):
-                    product_section = True
-                elif product_section:
-                    if "____" in line or "TOTAL" in line:
-                        product_section = False
-                    else:
-                        match = product_line_pattern.match(line)
-                        if match:
-                            ctd, desc, precio, subtotal = match.groups()
-                            product = Product.objects.filter(description=desc.strip())
-                            sale_details_data.append({
-                                'product': product,
-                                'quantity': int(ctd),
-                                'unit': product.exit_stock_unit,
-                                'unit_price': product.sale_price,
-                                'precio': Decimal(precio),
-                                'subtotal': Decimal(subtotal)
-                            })
-        except Exception as e:
-            raise Exception("File does not match Receipt format")
+            root = ET.fromstring(xml_content)
 
-        if fecha_emision is None or hora is None or total is None or len(sale_details_data) == 0:
+            # Extract basic fields
+            total = root.findtext('total')
+
+            # Extract product list
+            for sale_detail in root.findall('./detalle_articulos/producto'):
+                desc = sale_detail.findtext('descripcion')
+                product = Product.objects.filter(description=desc.strip())
+                product_data = {
+                    'product': product,
+                    'quantity': sale_detail.findtext('cantidad'),
+                    'unit': product.exit_stock_unit,
+                    'unit_price': product.sale_price,
+                    'subtotal': Decimal(sale_detail.findtext('subtotal')),
+                }
+                products.append(product_data)
+        except Exception as e:
+            raise Exception(f"File does not match Receipt format: {str(e)}")
+
+        if fecha_emision is None or total is None or len(products) == 0:
             raise Exception("File does not match Receipt format")
 
         sale_data = {
@@ -126,14 +112,13 @@ class DailyStockUpdate(APIView):
 
         # Printing results
         print("Fecha de emisión:", fecha_emision)
-        print("Hora:", hora)
         print("Total:", total)
         print("Productos:")
-        for p in sale_details_data:
+        for p in products:
             print(p)
 
         with transaction.atomic():
             sale = Sale.objects.create(**sale_data)
 
-            for detail in sale_details_data:
+            for detail in products:
                 SaleDetail.objects.create(sale=sale, **detail)

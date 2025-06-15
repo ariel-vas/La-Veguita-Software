@@ -1,4 +1,5 @@
 import pdfplumber
+import gc
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,26 +12,39 @@ class ProductsPDFProcessingView(APIView):
         serializer = PDFUploadSerializer(data=request.data)
         if serializer.is_valid():
             pdf_file = serializer.validated_data['file']
+            update_count = 0
+            create_count = 0
+            invalid_count = 0
+            no_change_count = 0
 
             try:
-                tables = []
                 with pdfplumber.open(pdf_file) as pdf:
                     for page in pdf.pages:
-                        # Extract tables from each page
-                        page_tables = page.extract_tables()
-                        for table in page_tables:
-                            tables.append(table)
-
-                # Product generation or updating
-                for table in tables:
-                    for row in table:
-                        valid_row = self.get_validated_product_row(row)
-                        if valid_row is not None:
-                            self.create_or_modify_product(valid_row)
+                        for table in page.extract_tables():
+                            for row in table:
+                                valid_row = self.get_validated_product_row(row)
+                                if valid_row is not None:
+                                    created = self.create_or_modify_product(valid_row)
+                                    if created == -1:
+                                        invalid_count += 1
+                                    elif created == 0:
+                                        no_change_count += 1
+                                    elif created == 1:
+                                        update_count += 1
+                                    elif created == 2:
+                                        create_count += 1
+                        page.flush_cache()
+                        page.get_textmap.cache_clear()
+                del pdf_file
+                gc.collect()
 
                 return Response({
                     "message": "PDF processed successfully.",
-                    "tables": tables[:2]  # Only show the first 2 tables for preview
+                    "total_count": update_count + create_count + invalid_count + no_change_count,
+                    "update_count": update_count,
+                    "create_count": create_count,
+                    "invalid_count": invalid_count,
+                    "no_change_count": no_change_count
                 })
             except Exception as e:
                 return Response({"error": f"Failed to process PDF: {str(e)}"}, status=400)
@@ -55,8 +69,8 @@ class ProductsPDFProcessingView(APIView):
             validated_row["wholesale_quantity"] = row[5]
             validated_row["discount_surcharge"] = row[12]
             validated_row["critical_stock"] = row[11]
-            #validated_row["category"] = row[8]
-            #validated_row["supplier"] = row[9]
+            validated_row["category"] = row[8]
+            validated_row["supplier"] = row[9]
 
             # added defaults
             validated_row["stock"] = "0"
@@ -74,17 +88,33 @@ class ProductsPDFProcessingView(APIView):
         return None
 
     def create_or_modify_product(self, valid_row):
+        result = 1  # Updated product
         try:
             product = Product.objects.get(id_product=valid_row["id_product"])
+            if not self.is_changed(valid_row, product):
+                return 0  # No Changes
             serializer = ProductSerializer(product, data=valid_row, partial=True)  # UPDATE
-            print("UPDATING ROW: " + str(valid_row))
         except Product.DoesNotExist:
             serializer = ProductSerializer(data=valid_row)  # CREATE
+            result = 2  # Created product
 
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return
+            return result
         print("INVALID SERIALIZED ROW: " + str(valid_row))
+        return -1  # Invalid product
+
+    def is_changed(self, row, product):
+        return (row["id_product"] != product.id_product or
+                row["description"] != product.description or
+                row["purchase_price"] != product.purchase_price or
+                row["sale_price"] != product.sale_price or
+                row["wholesale_price"] != product.wholesale_price or
+                row["wholesale_quantity"] != product.wholesale_quantity or
+                row["discount_surcharge"] != product.discount_surcharge or
+                row["critical_stock"] != product.critical_stock or
+                row["category"] != product.category or
+                row["supplier"] != product.supplier)
 
 
 class CategoriesPDFProcessingView(APIView):
@@ -92,26 +122,39 @@ class CategoriesPDFProcessingView(APIView):
         serializer = PDFUploadSerializer(data=request.data)
         if serializer.is_valid():
             pdf_file = serializer.validated_data['file']
+            update_count = 0
+            create_count = 0
+            invalid_count = 0
+            no_change_count = 0
 
             try:
-                tables = []
                 with pdfplumber.open(pdf_file) as pdf:
                     for page in pdf.pages:
-                        # Extract tables from each page
-                        page_tables = page.extract_tables()
-                        for table in page_tables:
-                            tables.append(table)
-
-                # Product generation or updating
-                for table in tables:
-                    for row in table:
-                        valid_row = self.get_validated_category_row(row)
-                        if valid_row is not None:
-                            self.create_or_modify_category(valid_row)
+                        for table in page.extract_tables():
+                            for row in table:
+                                valid_row = self.get_validated_category_row(row)
+                                if valid_row is not None:
+                                    created = self.create_or_modify_category(valid_row)
+                                    if created == -1:
+                                        invalid_count += 1
+                                    elif created == 0:
+                                        no_change_count += 1
+                                    elif created == 1:
+                                        update_count += 1
+                                    elif created == 2:
+                                        create_count += 1
+                        page.flush_cache()
+                        page.get_textmap.cache_clear()
+                del pdf_file
+                gc.collect()
 
                 return Response({
                     "message": "PDF processed successfully.",
-                    "tables": tables
+                    "total_count": update_count + create_count + invalid_count + no_change_count,
+                    "update_count": update_count,
+                    "create_count": create_count,
+                    "invalid_count": invalid_count,
+                    "no_change_count": no_change_count
                 })
             except Exception as e:
                 return Response({"error": f"Failed to process PDF: {str(e)}"}, status=400)
@@ -136,14 +179,22 @@ class CategoriesPDFProcessingView(APIView):
         return None
 
     def create_or_modify_category(self, valid_row):
+        result = 1  # Updated product
         try:
             category = Category.objects.get(id_category=valid_row["id_category"])
+            if not self.is_changed(valid_row, category):
+                return 0  # No Changes
             serializer = CategorySerializer(category, data=valid_row)  # UPDATE
-            print("UPDATING ROW: " + str(valid_row))
         except Category.DoesNotExist:
             serializer = CategorySerializer(data=valid_row)  # CREATE
+            result = 2  # Created product
 
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return
+            return result
         print("INVALID SERIALIZED ROW: " + str(valid_row))
+        return -1  # Invalid product
+
+    def is_changed(self, row, category):
+        return (row["id_category"] != category.id_category or
+                row["name"] != category.name)
