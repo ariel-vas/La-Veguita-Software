@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
-    <h1 class="text-4xl font-bold text-[#8bc34a]">Búsqueda y Listado de Productos</h1>
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 pt-0 mt-16">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] sm:mb-4 md:mb-6 lg:mb-10">Búsqueda y Listado de Productos</h1>
     <h2 class="text-2xl font-semibold text-[#8bc34a] mb-6">Ingresa el ID del producto</h2>
 
     <!-- Input de búsqueda -->
@@ -13,7 +13,7 @@
       />
       <button
         @click="search"
-        class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 w-full"
+        class="bg-[#ff9800] text-white py-2 px-2 sm:px-4 md:px-6 lg:px-8 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 w-full"
       >
         Buscar
       </button>
@@ -23,27 +23,27 @@
     <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
       <thead class="bg-[#8bc34a] text-white">
         <tr>
-          <th class="text-left py-3 px-6">ID</th>
-          <th class="text-left py-3 px-6">Nombre</th>
-          <th class="text-left py-3 px-6">Precio</th>
-          <th class="text-left py-3 px-6">Unidad de Venta</th>
-          <th class="text-left py-3 px-6">Acción</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">ID</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Nombre</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Precio</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Unidad de Venta</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Acción</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
-          <td class="py-3 px-6">{{ prod.id_product }}</td>
-          <td class="py-3 px-6">{{ prod.name }}</td>
-          <td class="py-3 px-6">${{ prod.exit_stock_unit === 'unit'
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ prod.id_product }}</td>
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ prod.name }}</td>
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">${{ prod.exit_stock_unit === 'unit'
                                   ? Number(prod.sale_price_unit)
                                   : Number(prod.sale_price_kilo)}}</td>
-          <td class="py-3 px-6">
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
               {{ prod.exit_stock_unit === 'unit' ? 'Unidad' : 'Kilo' }}
           </td>
-          <td class="py-3 px-6">
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
             <button
               @click="navigateToPage(prod.id_product)"
-              class="bg-[#ff9800] text-white py-1 px-4 rounded-xl hover:bg-opacity-90 transition duration-300"
+              class="bg-[#ff9800] text-white py-1 px-2 sm:px-3 md:px-4 lg:px-5 rounded-xl hover:bg-opacity-90 transition duration-300"
             >
               Ver detalle
             </button>
@@ -59,7 +59,7 @@
     <div v-if="error" class="text-2xl font-semibold text-red-600 mt-6">{{ error }}</div>
   <button
     @click="$router.push('/')"
-    class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 "
+    class="bg-[#ff9800] text-white py-2 px-2 sm:px-4 md:px-6 lg:px-8 rounded-xl text-lg hover:bg-opacity-90 transition duration-300 "
   >
     Volver atrás
   </button>

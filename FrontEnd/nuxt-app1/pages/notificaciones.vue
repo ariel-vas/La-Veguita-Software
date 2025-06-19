@@ -1,9 +1,9 @@
 <template>
-  <div class="p-6 max-w-6xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6">Notificaciones</h1>
+  <div class="mt-8 p-6 max-w-6xl mx-auto">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-5 sm:mb-4 md:mb-6 lg:mb-10">Notificaciones</h1>
 
     <div v-for="estado in ['pending', 'posponed', 'ready']" :key="estado" class="mb-8">
-      <h2 class="text-xl font-semibold capitalize mb-3">
+      <h2 class="text-xl sm:text-xl md:text-xl lg:text-2xl font-bold text-orange-700 mb-4">
         {{ estadoLabels[estado] }}
       </h2>
 

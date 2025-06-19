@@ -1,6 +1,6 @@
 <template> 
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
-    <h1 class="text-4xl font-bold text-[#8bc34a]">Crear Producto</h1>
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 pt-0 mt-16">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-5 sm:mb-4 md:mb-6 lg:mb-10">Crear Producto</h1>
 
     <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-xl space-y-6">
       <div
@@ -19,7 +19,7 @@
           >
             <select
               v-model="editado.subcategories[index]"
-              class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+              class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2"
             >
               <option disabled value="">Seleccionar subcategoría</option>
               <option
@@ -50,7 +50,7 @@
         <select
           v-else-if="campo.key === 'category'"
           v-model="editado.category"
-          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2"
         >
           <option disabled value="">Seleccionar categoría</option>
           <option v-for="cat in categoriasDisponibles" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
@@ -60,7 +60,7 @@
         <select
           v-else-if="campo.key === 'supplier'"
           v-model="editado.supplier"
-          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2"
         >
           <option disabled value="">Seleccionar proveedor</option>
           <option v-for="prov in proveedoresDisponibles" :key="prov.id" :value="prov.name">{{ prov.name }}</option>
@@ -70,7 +70,7 @@
         <select
           v-else-if="campo.key === 'entry_stock_unit' || campo.key === 'exit_stock_unit'"
           v-model="editado[campo.key]"
-          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2"
         >
           <option disabled value="">Seleccionar unidad</option>
           <option value="unit">Unidad</option>
@@ -104,7 +104,7 @@
           v-else
           v-model="editado[campo.key]"
           :type="campo.type || 'text'"
-          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2"
           :placeholder="campo.label"
         />
 
@@ -116,7 +116,7 @@
       <div class="flex justify-center mt-6">
         <button
           @click="crearProducto"
-          class="bg-[#8bc34a] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
+          class="bg-[#8bc34a] text-white py-2 px-2 sm:px-4 md:px-6 lg:px-8 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
         >
           Crear Producto
         </button>
@@ -125,7 +125,7 @@
 
     <button
       @click="$router.push('/')"
-      class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
+      class="bg-[#ff9800] text-white py-2 px-2 sm:px-4 md:px-6 lg:px-8 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
     >
       Volver atrás
     </button>

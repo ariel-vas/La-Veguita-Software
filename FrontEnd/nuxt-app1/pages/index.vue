@@ -1,8 +1,8 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
-    <div class="bg-white border border-[#c5e1a5] shadow-md rounded-2xl px-8 py-6 text-center w-full max-w-3xl">
-      <h1 class="text-4xl font-extrabold text-[#689f38] mb-2">Sistema de Gestión de Stock</h1>
-      <h2 class="text-2xl font-medium text-[#8bc34a]">Bienvenido a la aplicación de gestión de stock de La Veguita</h2>
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 pt-0 mt-16">
+    <div class="bg-white border border-[#c5e1a5] shadow-md rounded-2xl px-6 sm:px-12 md:px-16 lg:px-25 py-6 text-center w-full max-w-3xl">
+      <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-2">Sistema de Gestión de Stock</h1>
+      <h2 class="text-xl sm:text-xl md:text-xl lg:text-xl font-bold text-[#8bc34a]">Bienvenido a la aplicación de gestión de stock de La Veguita</h2>
     </div>
 
 
@@ -12,7 +12,7 @@
       <div class="flex justify-center">
         <button
           @click="cargarStock"
-          class="w-80 bg-[#ff9800] hover:bg-orange-500 text-white font-semibold py-6 px-2 rounded-2xl text-center shadow-lg transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+          class="w-80 bg-[#ff9800] hover:bg-orange-400 text-white font-semibold py-6 px-2 rounded-2xl text-center shadow-lg transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
           :disabled="cargando"
         >
           <span v-if="!cargando">Actualización diaria de Stock</span>

@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
-    <h1 class="text-4xl font-bold text-[#8bc34a]">Búsqueda y Listado de Productos</h1>
-    <h2 class="text-2xl font-semibold text-[#8bc34a] mb-6">Ingresa el ID del producto</h2>
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 pt-0 mt-16">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl xl:text-5xl font-bold text-[#8bc34a]">Búsqueda y Listado de Productos</h1>
+    <h2 class="text-xl sm:text-2xl md:text-3xl xl:text-4xl font-bold text-[#8bc34a] mb-6">Ingresa el ID del producto</h2>
 
     <div class="flex flex-col items-center gap-4 mb-6 w-full max-w-sm">
       <input
@@ -21,7 +21,7 @@
     <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
       <thead class="bg-[#8bc34a] text-white">
         <tr>
-          <th colspan="2" class="text-left py-3 px-6">
+          <th colspan="2" class="text-left py-3 px-2 sm:px-4 md:px-6 xl:px-8">
             <label class="block text-white font-semibold mb-2">Filtrar por Categoría</label>
             <select 
               v-model="selectedCategory"
@@ -34,7 +34,7 @@
               </option>
             </select>
           </th>
-          <th colspan="2" class="text-left py-3 px-6">
+          <th colspan="2" class="text-left py-3 px-2 sm:px-4 md:px-6 xl:px-8">
             <label class="block text-white font-semibold mb-2">Filtrar por Subcategoría</label>
             <select 
               v-model="selectedSubcategory"
@@ -49,26 +49,26 @@
           </th>
         </tr>
         <tr>
-          <th class="text-left py-3 px-6">ID</th>
-          <th class="text-left py-3 px-6">Nombre</th>
-          <th class="text-left py-3 px-6">Stock Actual</th>
-          <th class="text-left py-3 px-6">Acción</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 xl:px-8">ID</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 xl:px-8">Nombre</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 xl:px-8">Stock Actual</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 xl:px-8">Acción</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
-          <td class="py-3 px-6">{{ prod.id_product }}</td>
-          <td class="py-3 px-6">{{ prod.description }}</td>
-          <td class="py-3 px-6">
+          <td class="py-3 px-2 sm:px-4 md:px-6 xl:px-8">{{ prod.id_product }}</td>
+          <td class="py-3 px-2 sm:px-4 md:px-6 xl:px-8">{{ prod.description }}</td>
+          <td class="py-3 px-2 sm:px-4 md:px-6 xl:px-8">
             {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
             <span class="text-sm text-gray-600 ml-1">
               ({{ prod.exit_stock_unit === 'unit' ? 'Unidades' : 'Kilos' }})
             </span>
           </td>
-          <td class="py-3 px-6">
+          <td class="py-3 px-2 sm:px-4 md:px-6 xl:px-8">
             <button
               @click="navigateToPage(prod.id_product)"
-              class="bg-[#ff9800] text-white py-1 px-4 rounded-xl hover:bg-opacity-90 transition duration-300"
+              class="bg-[#ff9800] text-white py-1 px-2 sm:px-3 md:px-4 xl:px-6 rounded-xl hover:bg-opacity-90 transition duration-300"
             >
               Ingresar Stock
             </button>
@@ -83,7 +83,7 @@
     <div v-if="error" class="text-2xl font-semibold text-red-600 mt-6">{{ error }}</div>
     <button
       @click="$router.push('/')"
-      class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
+      class="bg-[#ff9800] text-white py-2 px-4 sm:px-5 md:px-6 xl:px-8 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
     >
       Volver atrás
     </button>

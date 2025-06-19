@@ -1,11 +1,11 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
-    <h1 class="text-4xl font-bold text-[#8bc34a]">Listado de Categorías</h1>
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 pt-0 mt-16">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-5 sm:mb-4 md:mb-6 lg:mb-10">Listado de Categorías</h1>
 
     <!-- Botón Agregar Categoría -->
     <button
       @click="$router.push('/crearcategoria/')"
-      class="bg-blue-600 text-white py-2 px-4 rounded-lg text-base hover:bg-blue-700 transition"
+      class="bg-blue-600 text-white py-2 px-2 sm:px-3 md:px-4 rounded-lg text-base hover:bg-blue-700 transition"
     >
       + Agregar Categoría
     </button>
@@ -14,8 +14,8 @@
     <table class=" bg-white rounded-xl shadow overflow-hid_categoryden">
       <thead class="bg-[#8bc34a] text-white">
         <tr>
-          <th class="text-left py-3 px-6">Nombre</th>
-          <th class="text-left py-3 px-6">Acciones</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Nombre</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -24,8 +24,8 @@
           :key="cat.id_category"
           class="border-b hover:bg-[#f0f8e9]"
         >
-          <td class="py-3 px-6">{{ cat.name }}</td>
-          <td class="py-3 px-6">
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ cat.name }}</td>
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
             <button
               @click="navigateToPage(cat.id_category)"
               class="bg-[#8bc34a] text-white px-4 py-1 rounded hover:bg-[#7cb342] transition"
@@ -48,7 +48,7 @@
     <!-- Botón volver atrás -->
     <button
       @click="$router.push('/')"
-      class="bg-[#ff9800] text-white py-2 px-6 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
+      class="bg-[#ff9800] text-white py-2 px-2 sm:px-4 md:px-6 lg:px-8 rounded-xl text-lg hover:bg-opacity-90 transition duration-300"
     >
       Volver atrás
     </button>
