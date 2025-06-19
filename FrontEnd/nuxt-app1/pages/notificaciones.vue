@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-8 p-6 max-w-6xl mx-auto">
+  <div class="mt-0 p-6 max-w-6xl mx-auto">
     <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-5 sm:mb-4 md:mb-6 lg:mb-10">Notificaciones</h1>
 
     <div v-for="estado in ['pending', 'posponed', 'ready']" :key="estado" class="mb-8">
@@ -28,7 +28,7 @@
             ✘
           </button>
 
-          <p class="font-bold">{{ noti.name_product }}</p>
+          <p class="font-bold max-w-[500px] truncate whitespace-nowrap overflow-hidden">{{ noti.name_product }}</p>
           <p>Fecha de vencimiento: {{ new Date(noti.expiration_date).toLocaleDateString() }}</p>
           <p v-if="estado === 'ready'">Fecha de Visado: {{ new Date(noti.date_of_completion).toLocaleDateString() }}</p>
 
@@ -94,7 +94,13 @@ const cargarNotificaciones = async () => {
       try {
         const batchRes = await fetch(`${config.public.apiBase}/api/batches/${n.id_notification}`)
         const batchData = await batchRes.json()
-        return { ...n, batchDetails: Array.isArray(batchData) ? batchData : [batchData] }
+        return {
+          ...n,
+          batchDetails: Array.isArray(batchData)
+            ? batchData.filter(b => b && b.quantity != null && b.unit)
+            : (batchData && batchData.quantity != null && batchData.unit ? [batchData] : [])
+        }
+
       } catch {
         return { ...n, batchDetails: [] }
       }

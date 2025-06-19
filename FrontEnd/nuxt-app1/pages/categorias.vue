@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 pt-0 mt-16">
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 mt-0">
     <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-5 sm:mb-4 md:mb-6 lg:mb-10">Listado de Categorías</h1>
 
     <!-- Botón Agregar Categoría -->
@@ -41,6 +41,57 @@
         </tr>
       </tbody>
     </table>
+    <!-- Paginación -->
+    <div class="flex flex-col items-center gap-2 mt-6">
+      <div class="text-gray-600 font-medium">
+        Mostrando {{ currentRange }} de {{ totalCategories }} categorías
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <button
+          @click="changePage(1)"
+          :disabled="currentPage === 1"
+          class="px-3 py-1 rounded-md bg-[#8bc34a] text-white hover:bg-[#7cb342] disabled:opacity-50"
+        >
+          &laquo;
+        </button>
+        <button
+          @click="changePage(currentPage - 1)"
+          :disabled="currentPage === 1"
+          class="px-3 py-1 rounded-md bg-[#8bc34a] text-white hover:bg-[#7cb342] disabled:opacity-50"
+        >
+          &lt;
+        </button>
+
+        <button
+          v-for="page in visiblePages"
+          :key="'page-' + page"
+          @click="changePage(page)"
+          :class="[
+            'px-3 py-1 rounded-md',
+            page === currentPage
+              ? 'bg-[#ff9800] text-white'
+              : 'bg-white text-[#8bc34a] border border-[#8bc34a] hover:bg-[#f0f0f0]'
+          ]"
+        >
+          {{ page }}
+        </button>
+
+        <button
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === totalPages"
+          class="px-3 py-1 rounded-md bg-[#8bc34a] text-white hover:bg-[#7cb342] disabled:opacity-50"
+        >
+          &gt;
+        </button>
+        <button
+          @click="changePage(totalPages)"
+          :disabled="currentPage === totalPages"
+          class="px-3 py-1 rounded-md bg-[#8bc34a] text-white hover:bg-[#7cb342] disabled:opacity-50"
+        >
+          &raquo;
+        </button>
+      </div>
+    </div>
 
     <!-- Mensaje de error -->
     <div v-if="error" class="text-2xl font-semibold text-red-600 mt-6">{{ error }}</div>
@@ -62,13 +113,46 @@ export default {
     return {
       categories: [],
       error: '',
+      currentPage: 1,
+      itemsPerPage: 10, // o 20, según prefieras
+      maxVisiblePages: 5,
     };
   },
   computed: {
+    totalCategories() {
+      return this.categories.length;
+    },
+    totalPages() {
+      return Math.ceil(this.totalCategories / this.itemsPerPage);
+    },
+    currentRange() {
+      const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+      const end = Math.min(start + this.itemsPerPage - 1, this.totalCategories);
+      return `${start}-${end}`;
+    },
+    visiblePages() {
+      const pages = [];
+      const half = Math.floor(this.maxVisiblePages / 2);
+      let start = Math.max(1, this.currentPage - half);
+      let end = Math.min(this.totalPages, start + this.maxVisiblePages - 1);
+
+      if (end - start + 1 < this.maxVisiblePages) {
+        start = Math.max(1, end - this.maxVisiblePages + 1);
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      return pages;
+    },
     displayedCategories() {
-      return this.categories.slice(0, 20);
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.categories.slice(start, end);
     },
   },
+
   methods: {
     async fetchCategories() {
       try {
@@ -83,6 +167,11 @@ export default {
     },
     navigateToPage(id_category) {
       this.$router.push({ path: `/detalleCategoria/${id_category}` });
+    },
+    changePage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
     },
   },
   mounted() {

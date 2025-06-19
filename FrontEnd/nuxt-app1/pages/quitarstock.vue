@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 pt-0 mt-16">
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 mt-0">
     <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] sm:mb-4 md:mb-6 lg:mb-10">Salida Manual de Stock</h1>
     <h2 class="text-2xl font-semibold text-[#8bc34a] mb-6">Busca productos por ID y descuenta stock</h2>
 
@@ -11,80 +11,130 @@
         class="p-3 w-full text-lg border-2 border-[#8bc34a] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8bc34a]"
       />
     </div>
-
-    <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
-      <thead class="bg-[#8bc34a] text-white">
-        <tr>
-          <th colspan="2" class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">
-            <label class="block text-white font-semibold mb-2">Filtrar por Categoría</label>
-            <select 
-              v-model="selectedCategory"
-              @change="applyFilters"
-              class="p-2 w-full text-base border-2 border-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white text-[#000000]"
-            >
-              <option value="">Todas las categorías</option>
-              <option v-for="category in categories" :key="category" :value="category">
-                {{ category }}
-              </option>
-            </select>
-          </th>
-          <th colspan="2" class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">
-            <label class="block text-white font-semibold mb-2">Filtrar por Subcategoría</label>
-            <select 
-              v-model="selectedSubcategory"
-              @change="applyFilters"
-              class="p-2 w-full text-base border-2 border-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white text-[#000000]"
+    <div class="w-full overflow-x-auto rounded-xl shadow">
+      <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
+        <thead class="bg-[#8bc34a] text-white">
+          <tr>
+            <th colspan="2" class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">
+              <label class="block text-white font-semibold mb-2">Filtrar por Categoría</label>
+              <select 
+                v-model="selectedCategory"
+                @change="applyFilters"
+                class="p-2 w-full text-base border-2 border-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white text-[#000000]"
               >
-              <option value="">Todas las subcategorías</option>
-              <option v-for="subcat in filteredSubcategories" :key="subcat" :value="subcat">
-                {{ subcat }}
-              </option>
-            </select>
-          </th>
-        </tr>
-        <tr>
-          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">ID</th>
-          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Nombre</th>
-          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Stock Actual</th>
-          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Quitar Stock</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
-          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ prod.id_product }}</td>
-          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ prod.description }}</td>
+                <option value="">Todas las categorías</option>
+                <option v-for="category in categories" :key="category" :value="category">
+                  {{ category }}
+                </option>
+              </select>
+            </th>
+            <th colspan="2" class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">
+              <label class="block text-white font-semibold mb-2">Filtrar por Subcategoría</label>
+              <select 
+                v-model="selectedSubcategory"
+                @change="applyFilters"
+                class="p-2 w-full text-base border-2 border-white rounded-xl focus:outline-none focus:ring-2 focus:ring-white text-[#000000]"
+                >
+                <option value="">Todas las subcategorías</option>
+                <option v-for="subcat in filteredSubcategories" :key="subcat" :value="subcat">
+                  {{ subcat }}
+                </option>
+              </select>
+            </th>
+          </tr>
+          <tr>
+            <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">ID</th>
+            <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Nombre</th>
+            <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Stock Actual</th>
+            <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Quitar Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="prod in displayedProducts" :key="prod.id_product" class="border-b hover:bg-[#f0f8e9]">
+            <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ prod.id_product }}</td>
+            <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8 max-w-[200px] truncate whitespace-nowrap overflow-hidden">{{ prod.description }}</td>
 
-          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
-            {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
-            <span class="text-sm text-gray-600 ml-1">
-              ({{ prod.exit_stock_unit === 'unit' ? 'Unidades' : 'Kilos' }})
-            </span>
-          </td>
+            <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
+              {{ prod.exit_stock_unit === 'kilo' ? parseFloat(prod.stock).toFixed(3) : parseInt(prod.stock) }}
+              <span class="text-sm text-gray-600 ml-1">
+                ({{ prod.exit_stock_unit === 'unit' ? 'Unidades' : 'Kilos' }})
+              </span>
+            </td>
 
-          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
-            <input
-              :value="prod.stockToRemove"
-              @input="validateStockRemoveInput($event, prod)"
-              type="number"
-              :step="prod.exit_stock_unit === 'unit' ? '1' : '0.01'"
-              :min="prod.exit_stock_unit === 'unit' ? '1' : '0.01'"
-              class="w-24 p-1 border border-[#8bc34a] rounded mr-2"
-              placeholder="Cant."
-            />
-            <button
-              @click="removeStock(prod)"
-              class="bg-[#ff9800] text-white py-1 px-1 sm:px-3 md:px-4 lg:px-5 rounded hover:bg-opacity-90 transition"
-            >
-              Quitar
-            </button>
-          </td>
-        </tr>
+            <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
+              <input
+                :value="prod.stockToRemove"
+                @input="validateStockRemoveInput($event, prod)"
+                type="number"
+                :step="prod.exit_stock_unit === 'unit' ? '1' : '0.01'"
+                :min="prod.exit_stock_unit === 'unit' ? '1' : '0.01'"
+                class="w-24 p-1 border border-[#8bc34a] rounded mr-2"
+                placeholder="Cant."
+              />
+              <button
+                @click="removeStock(prod)"
+                class="bg-[#ff9800] text-white py-1 px-1 sm:px-3 md:px-4 lg:px-5 rounded hover:bg-opacity-90 transition"
+              >
+                Quitar
+              </button>
+            </td>
+          </tr>
 
-        <tr v-if="displayedProducts.length === 0">
-          <td colspan="4" class="text-center py-4 text-gray-500">No hay productos para mostrar.</td>
-        </tr>
-      </tbody>
-    </table>
+          <tr v-if="displayedProducts.length === 0">
+            <td colspan="4" class="text-center py-4 text-gray-500">No hay productos para mostrar.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="flex flex-col items-center gap-2 mt-6">
+      <div class="text-gray-600 font-medium">
+        Mostrando {{ currentRange }} de {{ totalProducts }} productos
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <button
+          @click="changePage(1)"
+          :disabled="currentPage === 1"
+          class="px-3 py-1 rounded-md bg-[#8bc34a] text-white hover:bg-[#7cb342] disabled:opacity-50"
+        >
+          &laquo;
+        </button>
+        <button
+          @click="changePage(currentPage - 1)"
+          :disabled="currentPage === 1"
+          class="px-3 py-1 rounded-md bg-[#8bc34a] text-white hover:bg-[#7cb342] disabled:opacity-50"
+        >
+          &lt;
+        </button>
+        <button
+          v-for="page in visiblePages"
+          :key="page"
+          @click="changePage(page)"
+          :class="[
+            'px-3 py-1 rounded-md',
+            page === currentPage
+              ? 'bg-[#ff9800] text-white'
+              : 'bg-white text-[#8bc34a] border border-[#8bc34a] hover:bg-[#f0f0f0]'
+          ]"
+        >
+          {{ page }}
+        </button>
+        <button
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === totalPages"
+          class="px-3 py-1 rounded-md bg-[#8bc34a] text-white hover:bg-[#7cb342] disabled:opacity-50"
+        >
+          &gt;
+        </button>
+        <button
+          @click="changePage(totalPages)"
+          :disabled="currentPage === totalPages"
+          class="px-3 py-1 rounded-md bg-[#8bc34a] text-white hover:bg-[#7cb342] disabled:opacity-50"
+        >
+          &raquo;
+        </button>
+      </div>
+    </div>
+
 
     <div v-if="error" class="text-2xl font-semibold text-red-600 mt-6">{{ error }}</div>
     <button
@@ -100,6 +150,9 @@
 export default {
   data() {
     return {
+      currentPage: 1,
+      itemsPerPage: 20,
+      maxVisiblePages: 5,
       searchId: '',
       products: [],
       allProducts: [], // Store all fetched products here
@@ -114,25 +167,26 @@ export default {
     displayedProducts() {
       let filtered = this.allProducts;
 
-      // Filter by searchId (and description) first
       if (this.searchId) {
         filtered = filtered.filter(
           (p) => p.id_product.toString().includes(this.searchId.trim()) ||
-                 p.description.toLowerCase().includes(this.searchId.toLowerCase().trim())
+                p.description.toLowerCase().includes(this.searchId.toLowerCase().trim())
         );
       }
 
-      // Then apply category filter
       if (this.selectedCategory) {
         filtered = filtered.filter(p => p.category === this.selectedCategory);
       }
-      
-      // Then apply subcategory filter
+
       if (this.selectedSubcategory) {
         filtered = filtered.filter(p => p.subcategories?.includes(this.selectedSubcategory));
       }
-      return filtered.slice(0, 20); // Limit to 20 products
+
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return filtered.slice(start, end);
     },
+
     filteredSubcategories() {
       // This will return all unique subcategories from all products to allow independent filtering.
       // If you want subcategories to be dependent on the selected category,
@@ -145,7 +199,51 @@ export default {
         // .filter(p => p.category === this.selectedCategory) // Uncomment this line if you want dependency
         .flatMap(p => p.subcategories || []);
       return [...new Set(subcategoriesForSelectedCategory)].filter(Boolean);
-    }
+    },
+    totalProducts() {
+      let filtered = this.allProducts;
+
+      if (this.searchId) {
+        filtered = filtered.filter(
+          (p) => p.id_product.toString().includes(this.searchId.trim()) ||
+                p.description.toLowerCase().includes(this.searchId.toLowerCase().trim())
+        );
+      }
+
+      if (this.selectedCategory) {
+        filtered = filtered.filter(p => p.category === this.selectedCategory);
+      }
+
+      if (this.selectedSubcategory) {
+        filtered = filtered.filter(p => p.subcategories?.includes(this.selectedSubcategory));
+      }
+
+      return filtered.length;
+    },
+    totalPages() {
+      return Math.ceil(this.totalProducts / this.itemsPerPage);
+    },
+    currentRange() {
+      const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+      const end = Math.min(start + this.itemsPerPage - 1, this.totalProducts);
+      return `${start}-${end}`;
+    },
+    visiblePages() {
+      const pages = [];
+      const half = Math.floor(this.maxVisiblePages / 2);
+      let start = Math.max(1, this.currentPage - half);
+      let end = Math.min(this.totalPages, start + this.maxVisiblePages - 1);
+
+      if (end - start + 1 < this.maxVisiblePages) {
+        start = Math.max(1, end - this.maxVisiblePages + 1);
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      return pages;
+    },
   },
   methods: {
     async fetchProducts() {
@@ -256,6 +354,11 @@ export default {
         // This ensures the input field visually reflects the corrected value in real-time.
         // It's important for user experience, especially when clipping values (e.g., trying to enter more than available stock).
         event.target.value = numericValue === 0 ? '' : String(numericValue); 
+    },
+    changePage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
     },
   },
   mounted() {

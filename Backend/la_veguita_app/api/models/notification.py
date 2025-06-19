@@ -23,6 +23,10 @@ class Notification(models.Model):
                 self.expiration_date = make_aware(datetime.combine(expiration, datetime.min.time()))
 
         super().save(*args, **kwargs)
-    
+    def delete(self, *args, **kwargs):
+        batch = self.id_batch
+        super().delete(*args, **kwargs)  # primero borrar la notificación
+        if batch and batch.notifications.count() == 0:
+            batch.delete()  # borrar batch si no tiene otras notificaciones
     def __str__(self):
         return f"Notification {self.id_notification} - {self.name_product}"

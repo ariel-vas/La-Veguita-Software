@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 pt-0 mt-16">
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 mt-0">
     <h1 class="text-4xl font-bold text-[#8bc34a]">Editar Producto</h1>
 
     <div v-if="producto" class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-xl space-y-6">
@@ -207,6 +207,7 @@ const agregarLote = async () => {
     const lote = {
       product: producto.value.id_product,
       quantity: cantidadAgregar.value,
+      starting_quantity: producto.value.stock,
       unit: producto.value.exit_stock_unit,
       entry_date: new Date().toISOString().slice(0, 10),
       expiration_date: fechaVencimiento.value,

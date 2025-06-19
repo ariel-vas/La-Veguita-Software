@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 pt-0 mt-16">
+  <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 mt-0">
     <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] sm:mb-4 md:mb-6 lg:mb-10">Búsqueda y Listado de Productos</h1>
     <h2 class="text-2xl font-semibold text-[#8bc34a] mb-6">Ingresa el ID del producto</h2>
 

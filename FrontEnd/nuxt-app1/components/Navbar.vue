@@ -1,4 +1,5 @@
 <template>
+  <div>
   <nav class="bg-[#8bc34a] text-white w-full sticky top-0 shadow">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
@@ -75,80 +76,76 @@
             <button @click="openLoginModal" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Ingresar</button>
           </div>
         </div>
-
-        <button @click="toggleMenu" class="md:hidden text-white focus:outline-none text-2xl">
-          ☰
-        </button>
-      </div>
-
-      <div v-if="menuOpen" class="md:hidden flex flex-col mt-2 space-y-2">
-        <template v-for="(item, index) in navItemsMobile" :key="index">
-          <div v-if="!item.action" class="flex items-center space-x-2">
-            <button
-              v-if="item.label === 'Productos'"
-              @click="showAlertModal = true"
-              class="relative group"
-              title="Productos por vencer"
-            >
-              <div class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
-                   :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
-
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
-                     class="w-6 h-6 transition"
-                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
-                </svg>
-
-                <span v-if="notificaciones.length > 0"
-                      class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md">
-                  {{ notificaciones.length }}
-                </span>
-              </div>
-            </button>
-
-            <NuxtLink
-              :to="item.link"
-              class="hover:bg-[#7cb342] px-3 py-2 rounded-md flex-grow"
-              @click="menuOpen = false"
-            >
-              {{ item.label }}
-            </NuxtLink>
-          </div>
+        
+        <!-- Botón campana + hamburguesa en móvil -->
+        <div class="flex items-center space-x-2 md:hidden">
+          <!-- Botón campana -->
           <button
-            v-else
-            @click="() => { item.action(); menuOpen = false }"
-            class="hover:bg-[#7cb342] px-3 py-2 rounded-md text-left"
+            @click="openAlertModal"
+            class="relative group"
+            title="Productos por vencer"
           >
-            {{ item.label }}
+            <div class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
+                :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                  :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
+                  class="w-6 h-6 transition"
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
+              </svg>
+              <span v-if="notificaciones.length > 0"
+                    class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                {{ notificaciones.length }}
+              </span>
+            </div>
           </button>
-        </template>
+
+          <!-- Botón hamburguesa -->
+          <button
+            @click="toggleMenu"
+            class="text-white focus:outline-none text-2xl z-60 relative"
+            aria-label="Abrir menú móvil"
+          >
+            ☰
+          </button>
+        </div>
+
       </div>
     </div>
   </nav>
 
-  <div v-if="isLoginModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-60" @click="closeLoginModal">
-    <div @click.stop class="bg-white p-8 rounded-lg shadow-lg w-96 z-70 absolute top-20 left-1/2 transform -translate-x-1/2">
-      <h2 class="text-xl font-bold mb-4">Iniciar Sesión</h2>
-      <form @submit.prevent="handleLogin">
-        <div class="mb-4">
-          <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
-          <input v-model="username" id="username" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]" required />
-        </div>
-        <div class="mb-6">
-          <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-          <input v-model="password" id="password" type="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]" required />
-        </div>
-        <div class="flex justify-between items-center">
-          <button type="submit" class="bg-[#ff9800] text-white px-4 py-2 rounded-md">Ingresar</button>
-          <button type="button" @click="togglePasswordRecovery" class="text-[#ff9800]">¿Recuperar Contraseña?</button>
-        </div>
-      </form>
-      <button @click="closeLoginModal" class="absolute top-2 right-2 text-gray-500">✘</button>
-    </div>
-  </div>
+  <!-- Menú móvil desplegable -->
+  <div
+    v-if="menuOpen"
+    class="md:hidden fixed top-16 right-0 w-64 bg-[#8bc34a] text-white shadow-lg rounded-bl-lg rounded-br-lg z-50 flex flex-col p-4 space-y-2 max-h-[calc(100vh-64px)] overflow-y-auto"
+  >
+    <template v-for="(item, index) in navItemsMobile">
+      <div
+        v-if="!item.action"
+        class="flex items-center space-x-2"
+        :key="'navitem-noaction-' + item.label + '-' + index"
+      >
+        <NuxtLink
+          :to="item.link"
+          class="hover:bg-[#7cb342] px-3 py-2 rounded-md flex-grow"
+          @click="menuOpen = false"
+        >
+          {{ item.label }}
+        </NuxtLink>
+      </div>
 
+      <button
+        v-else
+        :key="'navitem-action-' + item.label + '-' + index"
+        @click="() => { item.action(); menuOpen = false }"
+        class="hover:bg-[#7cb342] px-3 py-2 rounded-md text-left"
+      >
+        {{ item.label }}
+      </button>
+    </template>
+  </div>
+  <!-- Modal de Productos por Vencer -->
   <div v-if="showAlertModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50" @click="closeAlertModal">
     <div @click.stop class="bg-white p-6 rounded-lg shadow-lg w-96 z-60 absolute top-28 left-1/2 transform -translate-x-1/2 max-h-[70vh] overflow-y-auto">
       <h2 class="text-xl font-bold mb-4">Productos por Vencer</h2>
@@ -164,7 +161,7 @@
             class="border p-3 rounded-md shadow-sm bg-gray-50">
           <div class="flex justify-between items-center">
             <div>
-              <p class="font-semibold">{{ noti.name_product }}</p>
+              <p class="font-semibold max-w-[180px] truncate whitespace-nowrap overflow-hidden">{{ noti.name_product }}</p>
               <p class="text-sm text-gray-600">Vence: {{ new Date(noti.expiration_date).toLocaleDateString() }}</p>
               <div v-if="noti.batchDetails && noti.batchDetails.length > 0">
                 <div v-for="batch in noti.batchDetails" :key="batch.id_batch">
@@ -192,7 +189,7 @@
       <button @click="closeAlertModal" class="mt-4 bg-[#8bc34a] text-white px-4 py-2 rounded-md">Cerrar</button>
     </div>
   </div>
-
+  <!-- Modal de Aviso -->
   <transition name="fade-slide">
     <div
       v-if="mostrarAviso"
@@ -214,6 +211,28 @@
       </div>
     </div>
   </transition>
+  <!-- Modal de Login -->
+  <div v-if="isLoginModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-60" @click="closeLoginModal">
+    <div @click.stop class="bg-white p-8 rounded-lg shadow-lg w-96 z-70 absolute top-20 left-1/2 transform -translate-x-1/2">
+      <h2 class="text-xl font-bold mb-4">Iniciar Sesión</h2>
+      <form @submit.prevent="handleLogin">
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
+          <input v-model="username" id="username" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]" required />
+        </div>
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+          <input v-model="password" id="password" type="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]" required />
+        </div>
+        <div class="flex justify-between items-center">
+          <button type="submit" class="bg-[#ff9800] text-white px-4 py-2 rounded-md">Ingresar</button>
+          <button type="button" @click="togglePasswordRecovery" class="text-[#ff9800]">¿Recuperar Contraseña?</button>
+        </div>
+      </form>
+      <button @click="closeLoginModal" class="absolute top-2 right-2 text-gray-500">✘</button>
+    </div>
+  </div>
+  </div>
 </template>
 
 <script setup>
