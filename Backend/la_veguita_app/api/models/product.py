@@ -26,4 +26,4 @@ class Product(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, related_name='products', null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.id_product}: {self.description}, {str(self.purchase_price)}, {str(self.sale_price)}, {self.exit_stock_unit}"

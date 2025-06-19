@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.db import transaction
 from rest_framework import generics
 from rest_framework.views import APIView
-from ..models import Sale, SaleDetail, Product, LastProcessedReceipt
+from ..models import Sale, SaleDetail, Product, Batch, LastProcessedReceipt
 from ..serializers import SaleSerializer
 
 
@@ -25,7 +25,7 @@ class SaleRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
 class DailyStockUpdate(APIView):
     # Path to the folder synced with Google Drive
-    FOLDER_PATH = r"C:\Users\User\Desktop\test_prt"
+    FOLDER_PATH = r"C:\Users\User\Desktop\test_xmls"
 
     def post(self, request, *args, **kwargs):
 
@@ -43,7 +43,7 @@ class DailyStockUpdate(APIView):
             for filename in os.listdir(self.FOLDER_PATH):
                 match = pattern.match(filename)
                 if match:
-                    file_num = int(match.group(1))
+                    file_num = int(match.group(2))
                     if file_num > last_num:
                         full_path = os.path.join(self.FOLDER_PATH, filename)
                         new_files.append((file_num, full_path))
@@ -87,16 +87,30 @@ class DailyStockUpdate(APIView):
             # Extract basic fields
             total = root.findtext('total')
 
-            # Extract product list
+            # Extract sale detail list
             for sale_detail in root.findall('./detalle_articulos/producto'):
+                # Extracting relevant data
                 desc = sale_detail.findtext('descripcion')
-                product = Product.objects.filter(description=desc.strip())
+                quantity = int(sale_detail.findtext('cantidad'))
+                subtotal = Decimal(sale_detail.findtext('subtotal'))
+
+                # Obtaining product and removing stock
+                product = Product.objects.get(description=desc.strip())
+                self.discount_stock(product, quantity, subtotal)
+
+                # Put correct quantity value if unit is kilo
+                if product.exit_stock_unit == 'kilo':
+                    kilo_quantity = self.kilo_quantity_calc(product, subtotal)
+                    if kilo_quantity is not None:
+                        quantity = kilo_quantity
+
+                # Adding product data
                 product_data = {
                     'product': product,
-                    'quantity': sale_detail.findtext('cantidad'),
+                    'quantity': quantity,
                     'unit': product.exit_stock_unit,
                     'unit_price': product.sale_price,
-                    'subtotal': Decimal(sale_detail.findtext('subtotal')),
+                    'subtotal': subtotal,
                 }
                 products.append(product_data)
         except Exception as e:
@@ -111,14 +125,49 @@ class DailyStockUpdate(APIView):
         }
 
         # Printing results
-        print("Fecha de emisión:", fecha_emision)
-        print("Total:", total)
-        print("Productos:")
-        for p in products:
-            print(p)
+        #print("Fecha de emisión:", fecha_emision)
+        #print("Total:", total)
+        #print("Productos:")
+        #for p in products:
+        #    print(p)
 
         with transaction.atomic():
             sale = Sale.objects.create(**sale_data)
 
             for detail in products:
-                SaleDetail.objects.create(sale=sale, **detail)
+                try:  # if multiple sales with the same product, acumulate quantity and subtotal
+                    sale_detail = SaleDetail.objects.get(sale=sale, product=detail['product'])
+                    sale_detail.quantity += detail['quantity']
+                    sale_detail.subtotal += detail['subtotal']
+                    sale_detail.save()
+                except SaleDetail.DoesNotExist:
+                    SaleDetail.objects.create(sale=sale, **detail)
+
+    def discount_stock(self, product, quantity, subtotal):
+        # Product stock update
+        if product.exit_stock_unit == "kilo":
+            quantity = self.kilo_quantity_calc(product, subtotal)
+            if quantity is None:
+                print("WARNING: Product has sale price 0 and unit kilo, cannot calculate quantity, skipping...")
+                return
+            product.stock = max(0, product.stock - quantity)
+        elif product.exit_stock_unit == "unit":
+            product.stock = max(0, product.stock - quantity)
+        product.save()
+
+        # Batch stock update
+        try:
+            while quantity > 0:  # If there is leftover after discounting batch, get next batch and discount
+                batch = Batch.objects.filter(product=product).filter(quantity__gte=0).earliest("entry_date")  # Gets oldest non-empty batch of product
+                current_batch_quantity = batch.quantity
+                batch.quantity = max(0, batch.quantity - quantity)  # Assumes product unit == batch unit
+                quantity = quantity - current_batch_quantity
+                batch.save()
+            return
+        except Batch.DoesNotExist:
+            print(f"WARNING: Product {str(product.description)} does not have non empty batch available. Batch quantity discarded: {str(quantity)}")
+
+    def kilo_quantity_calc(self, product, subtotal):
+        if product.sale_price == 0:
+            return None
+        return subtotal / (product.sale_price * (1 + product.discount_surcharge))

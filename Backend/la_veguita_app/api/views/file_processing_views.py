@@ -1,5 +1,6 @@
 import pdfplumber
 import gc
+from decimal import Decimal
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -54,10 +55,11 @@ class ProductsPDFProcessingView(APIView):
     def get_validated_product_row(self, row):
         validated_row = {}
         if isinstance(row, list) and len(row) == 13:
-            if (row[1] is None or
+            if (row[1] is None or  # TODO: VALIDACION MAS COMPLETA DE CADA CAMPO
                     row[2] is None or
-                    not row[1].isdigit() or
-                    row[2] == ''):  # if code is invalid, or name is empty
+                    row[1] == '' or
+                    row[2] == '' or
+                    not row[8].isdigit()):  # if code or name is invalid or empty, or family is not id
                 print("EXCLUDING INVALID ROW: " + str(row))
                 return None
             # row dictionary creation
@@ -69,13 +71,20 @@ class ProductsPDFProcessingView(APIView):
             validated_row["wholesale_quantity"] = row[5]
             validated_row["discount_surcharge"] = row[12]
             validated_row["critical_stock"] = row[11]
-            validated_row["category"] = row[8]
-            validated_row["supplier"] = row[9]
+
+            # handle foreign keys
+            try:
+                category = Category.objects.get(id_category=row[8])
+                validated_row["category"] = category.name
+            except Category.DoesNotExist:
+                validated_row["category"] = ""
+                print(f"WARNING: Category with code {row[8]} does not exist, defaulting to blank category.")
+            validated_row["supplier"] = None#  row[9] TODO: IMPLEMENT THE SAME AS CATEGORY WHEN WE HAVE SUPPLIER LIST
 
             # added defaults
             validated_row["stock"] = "0"
-            validated_row["entry_stock_unit"] = "unit"
             validated_row["exit_stock_unit"] = "unit"
+            validated_row["entry_stock_unit"] = "unit"
             validated_row["composed_product"] = False
 
 
@@ -88,14 +97,26 @@ class ProductsPDFProcessingView(APIView):
         return None
 
     def create_or_modify_product(self, valid_row):
-        result = 1  # Updated product
         try:
+            # try to update product
+            result = 1  # Updated product
             product = Product.objects.get(id_product=valid_row["id_product"])
+
+            # mantain data native to our app, since list will have invalid data
+            valid_row["stock"] = product.stock
+            valid_row["composed_product"] = product.composed_product
+            valid_row["entry_stock_unit"] = product.entry_stock_unit
+            if product.exit_stock_unit == "kilo":  # If stock is kilo, then list will have invalid price, so use current
+                valid_row["sale_price"] = product.sale_price
+                valid_row["exit_stock_unit"] = "kilo"
+
             if not self.is_changed(valid_row, product):
                 return 0  # No Changes
-            serializer = ProductSerializer(product, data=valid_row, partial=True)  # UPDATE
+            serializer = ProductSerializer(product, data=valid_row, partial=True)
+
         except Product.DoesNotExist:
-            serializer = ProductSerializer(data=valid_row)  # CREATE
+            # if no product exists with id, create product
+            serializer = ProductSerializer(data=valid_row)
             result = 2  # Created product
 
         if serializer.is_valid(raise_exception=True):
@@ -105,16 +126,16 @@ class ProductsPDFProcessingView(APIView):
         return -1  # Invalid product
 
     def is_changed(self, row, product):
-        return (row["id_product"] != product.id_product or
-                row["description"] != product.description or
-                row["purchase_price"] != product.purchase_price or
-                row["sale_price"] != product.sale_price or
-                row["wholesale_price"] != product.wholesale_price or
-                row["wholesale_quantity"] != product.wholesale_quantity or
-                row["discount_surcharge"] != product.discount_surcharge or
-                row["critical_stock"] != product.critical_stock or
-                row["category"] != product.category or
-                row["supplier"] != product.supplier)
+        return (str(row["id_product"]) != str(product.id_product) or
+                str(row["description"]) != str(product.description) or
+                Decimal(row["purchase_price"]) != product.purchase_price or
+                Decimal(row["sale_price"]) != product.sale_price or
+                Decimal(row["wholesale_price"]) != product.wholesale_price or
+                Decimal(row["wholesale_quantity"]) != product.wholesale_quantity or
+                Decimal(row["discount_surcharge"]) != product.discount_surcharge or
+                Decimal(row["critical_stock"]) != product.critical_stock or
+                str(row["category"]) != str(product.category) or
+                str(row["supplier"]) != str(product.supplier))
 
 
 class CategoriesPDFProcessingView(APIView):
@@ -196,5 +217,5 @@ class CategoriesPDFProcessingView(APIView):
         return -1  # Invalid product
 
     def is_changed(self, row, category):
-        return (row["id_category"] != category.id_category or
-                row["name"] != category.name)
+        return (str(row["id_category"]) != str(category.id_category) or
+                str(row["name"]) != str(category.name))
