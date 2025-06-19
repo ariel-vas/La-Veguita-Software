@@ -9,7 +9,6 @@ class Sale(models.Model):
     datetime = models.DateTimeField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     products = models.ManyToManyField(Product, through='SaleDetail', related_name='sales')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales')
 
     def __str__(self):
         return self.id_sale
