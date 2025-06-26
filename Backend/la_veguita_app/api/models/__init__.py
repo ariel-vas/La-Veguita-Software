@@ -8,3 +8,4 @@ from .sale_detail import SaleDetail
 from .supplier import Supplier
 from .notification import Notification
 from .last_processed_receipt import LastProcessedReceipt
+from .wrong_sale_detail import WrongSaleDetail

@@ -14,7 +14,7 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
 
-class ProductRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+class ProductRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):  # TODO: DO SOFT DELETE
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = "id_product"
