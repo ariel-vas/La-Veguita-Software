@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from ..serializers import PDFUploadSerializer, ProductSerializer, CategorySerializer
-from ..models import Product, Category
+from ..models import Product, Category, Supplier
 
 
 class ProductsPDFProcessingView(APIView):
@@ -62,6 +62,7 @@ class ProductsPDFProcessingView(APIView):
                     not row[8].isdigit()):  # if code or name is invalid or empty, or family is not id
                 print("EXCLUDING INVALID ROW: " + str(row))
                 return None
+
             # row dictionary creation
             validated_row["id_product"] = row[1]
             validated_row["description"] = row[2]
@@ -71,6 +72,10 @@ class ProductsPDFProcessingView(APIView):
             validated_row["wholesale_quantity"] = row[5]
             validated_row["discount_surcharge"] = row[12]
             validated_row["critical_stock"] = row[11]
+            if row[7].strip() == "PESABLE":
+                validated_row["exit_stock_unit"] = "kilo"
+            else:
+                validated_row["exit_stock_unit"] = "unit"
 
             # handle foreign keys
             try:
@@ -79,11 +84,15 @@ class ProductsPDFProcessingView(APIView):
             except Category.DoesNotExist:
                 validated_row["category"] = ""
                 print(f"WARNING: Category with code {row[8]} does not exist, defaulting to blank category.")
-            validated_row["supplier"] = None#  row[9] TODO: IMPLEMENT THE SAME AS CATEGORY WHEN WE HAVE SUPPLIER LIST
+            try:
+                supplier = Supplier.objects.get(rut=row[9])
+                validated_row["supplier"] = supplier.rut
+            except Supplier.DoesNotExist:
+                validated_row["supplier"] = ""
+                print(f"WARNING: Supplier with rut {row[9]} does not exist, defaulting to blank category.")
 
             # added defaults
             validated_row["stock"] = "0"
-            validated_row["exit_stock_unit"] = "unit"
             validated_row["entry_stock_unit"] = "unit"
             validated_row["composed_product"] = False
 
@@ -106,9 +115,6 @@ class ProductsPDFProcessingView(APIView):
             valid_row["stock"] = product.stock
             valid_row["composed_product"] = product.composed_product
             valid_row["entry_stock_unit"] = product.entry_stock_unit
-            if product.exit_stock_unit == "kilo":  # If stock is kilo, then list will have invalid price, so use current
-                valid_row["sale_price"] = product.sale_price
-                valid_row["exit_stock_unit"] = "kilo"
 
             if not self.is_changed(valid_row, product):
                 return 0  # No Changes
@@ -134,6 +140,7 @@ class ProductsPDFProcessingView(APIView):
                 Decimal(row["wholesale_quantity"]) != product.wholesale_quantity or
                 Decimal(row["discount_surcharge"]) != product.discount_surcharge or
                 Decimal(row["critical_stock"]) != product.critical_stock or
+                str(row["exit_stock_unit"]) != str(product.exit_stock_unit) or
                 str(row["category"]) != str(product.category) or
                 str(row["supplier"]) != str(product.supplier))
 
