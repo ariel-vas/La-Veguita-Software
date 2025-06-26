@@ -1,15 +1,71 @@
 <template>
   <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-8 mt-0">
-    <h1 class="text-4xl font-bold text-[#8bc34a]">Detalle Proveedor</h1>
+    <h1 class="text-4xl font-bold text-[#8bc34a]">Editar Proveedor</h1>
 
     <div v-if="proveedor" class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-xl space-y-6">
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
-        <label class="font-semibold">Nombre del Proveedor:</label>
+        <label class="font-semibold mb-3">RUT del Proveedor</label>
+        <input
+          v-model="editado.rut"
+          type="text"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="RUT del Proveedor"
+        />
+        <label class="font-semibold mb-3">Nombre</label>
         <input
           v-model="editado.name"
           type="text"
-          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
           placeholder="Nombre del proveedor"
+        />
+        <label class="font-semibold mb-3">Giro</label>
+        <input
+          v-model="editado.line"
+          type="text"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Giro del proveedor"
+        />
+        <label class="font-semibold mb-3">Dirección</label>
+        <input
+          v-model="editado.address"
+          type="text"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Dirección del proveedor"
+        />
+        <label class="font-semibold mb-3">Comuna</label>
+        <input
+          v-model="editado.commune"
+          type="text"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Comuna del proveedor"
+        />
+        <label class="font-semibold mb-3">Ciudad</label>
+        <input
+          v-model="editado.city"
+          type="text"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Ciudad del proveedor"
+        />
+        <label class="font-semibold mb-3">Teléfono Fijo</label>
+        <input
+          v-model="editado.telephone"
+          type="text"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Teléfono Fijo del proveedor"
+        />
+        <label class="font-semibold mb-3">Celular</label>
+        <input
+          v-model="editado.cellphone"
+          type="text"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Celular del proveedor"
+        />
+        <label class="font-semibold mb-3">Correo</label>
+        <input
+          v-model="editado.email"
+          type="text"
+          class="border border-gray-300 rounded px-3 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Correo del proveedor"
         />
       </div>
 

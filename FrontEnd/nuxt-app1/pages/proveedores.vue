@@ -13,7 +13,9 @@
       <thead class="bg-[#8bc34a] text-white">
         <tr>
           <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Nombre</th>
-          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Acciones</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Giro</th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8"> </th>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8"> </th>
         </tr>
       </thead>
       <tbody>
@@ -23,12 +25,21 @@
           class="border-b hover:bg-[#f0f8e9]"
         >
           <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ supplier.name }}</td>
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ supplier.line }}</td>
           <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
             <button
               @click="navigateToPage(supplier.id_supplier)"
               class="bg-[#8bc34a] text-white px-4 py-1 rounded hover:bg-[#7cb342] transition"
             >
-              Ver Detalles
+              Editar
+            </button>
+          </td>
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
+            <button
+              @click="navigateToPageView(supplier.id_supplier)"
+              class="bg-[#8bc34a] text-white px-4 py-1 rounded hover:bg-[#7cb342] transition"
+            >
+              Ver Detalle
             </button>
           </td>
         </tr>
@@ -160,6 +171,9 @@ export default {
     },
     navigateToPage(id_supplier) { 
       this.$router.push({ path: `/detalleProveedor/${id_supplier}` });
+    },
+    navigateToPageView(id_supplier) {
+      this.$router.push({ path: `/detalleProveedorNoMod/${id_supplier}` });
     },
     changePage(page) {
       if (page >= 1 && page <= this.totalPages) {

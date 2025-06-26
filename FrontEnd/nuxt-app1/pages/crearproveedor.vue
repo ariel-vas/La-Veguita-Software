@@ -7,16 +7,110 @@
       class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-xl space-y-6"
     >
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
-        <label for="name" class="font-semibold">Nombre:</label>
+        <!-- RUT -->
+        <label for="name" class="font-semibold mb-3">RUT</label>
+        <input
+          id="name"
+          type="text"
+          v-model="proveedor.rut"
+          required
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Formato válido: 12.345.678-9 o 12.345.678-K"
+          pattern="^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$"
+          title="El RUT debe seguir el formato."
+        />
+        <!-- Nombre -->
+        <label for="name" class="font-semibold mb-3">Nombre</label>
         <input
           id="name"
           type="text"
           v-model="proveedor.name"
           required
-          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2"
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
           placeholder="Ingrese nombre del proveedor"
           pattern="^(?![0-9]+$).*$"
-          title="El nombre no puede ser solo números."
+          title="El nombre no puede tener solo números."
+        />
+        <!-- Giro -->
+        <label for="name" class="font-semibold mb-3">Giro</label>
+        <input
+          id="name"
+          type="text"
+          v-model="proveedor.line"
+          required
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Ingrese giro del proveedor"
+          pattern="^(?![0-9]+$).*$"
+          title="El giro no puede tener solo números."
+        />
+        <!-- Dirección -->
+        <label for="name" class="font-semibold mb-3">Dirección</label>
+        <input
+          id="name"
+          type="text"
+          v-model="proveedor.address"
+          required
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Ingrese la dirección del proveedor"
+          pattern="^(?![0-9]+$).*$"
+          title="La dirección no puede ser solo números."
+        />
+        <!-- Comuna -->
+        <label for="name" class="font-semibold mb-3">Comuna</label>
+        <input
+          id="name"
+          type="text"
+          v-model="proveedor.commune"
+          required
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Ingrese la comuna del proveedor"
+          pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$"
+          title="La comuna debe ser solo letras."
+        />
+        <!-- Ciudad -->
+        <label for="name" class="font-semibold mb-3">Ciudad</label>
+        <input
+          id="name"
+          type="text"
+          v-model="proveedor.city"
+          required
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Ingrese la ciudad del proveedor"
+          pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$"
+          title="El nombre debe ser solo letras."
+        />
+        <!-- Teléfono Fijo -->
+        <label for="name" class="font-semibold mb-3">Teléfono Fijo</label>
+        <input
+          id="name"
+          type="text"
+          v-model="proveedor.telephone"
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Ejemplo: 223456789 (campo opcional)"
+          pattern="^[0-9 ]+$"
+          title="El teléfono puede ser solo números."
+        />
+        <!-- Celular -->
+        <label for="name" class="font-semibold mb-3">Celular</label>
+        <input
+          id="name"
+          type="text"
+          v-model="proveedor.cellphone"
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Ejemplo 2233 4455 (campo opcional)"
+          pattern="^[0-9 ]+$"
+          title="El celular puede ser solo números."
+        />
+        <!-- Correo -->
+        <label for="name" class="font-semibold mb-3">Correo</label>
+        <input
+          id="name"
+          type="text"
+          v-model="proveedor.email"
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
+          placeholder="Ingrese correo del proveedor (opcional)"
+          pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+          title="El correo debe seguir un formato válido."
         />
       </div>
 
@@ -84,7 +178,15 @@ export default {
 
         this.mensaje = 'Proveedor creado exitosamente';
         this.mensajeError = false;
+        this.proveedor.rut = ''; // Limpia el campo después de crear
         this.proveedor.name = ''; // Limpia el campo después de crear
+        this.proveedor.line = ''; // Limpia el campo después de crear
+        this.proveedor.direction = ''; // Limpia el campo después de crear
+        this.proveedor.commune = ''; // Limpia el campo después de crear
+        this.proveedor.city = ''; // Limpia el campo después de crear
+        this.proveedor.cellphone = ''; // Limpia el campo después de crear
+        this.proveedor.telephone = ''; // Limpia el campo después de crear
+        this.proveedor.email = ''; // Limpia el campo después de crear
       } catch (error) {
         this.mensaje = error.message;
         this.mensajeError = true;
