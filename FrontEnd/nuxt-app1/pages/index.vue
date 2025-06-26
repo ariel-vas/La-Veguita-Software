@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 mt-0">
     <div class="bg-white border border-[#c5e1a5] shadow-md rounded-2xl px-6 sm:px-12 md:px-16 lg:px-25 py-6 text-center w-full max-w-3xl">
-      <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-2">Sistema de Gestión de Stock</h1>
+      <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#77a740] mb-2">Sistema de Gestión de Stock</h1>
       <h2 class="text-xl sm:text-xl md:text-xl lg:text-xl font-bold text-[#8bc34a]">Bienvenido a la aplicación de gestión de stock de La Veguita</h2>
     </div>
 
