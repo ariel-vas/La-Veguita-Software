@@ -132,6 +132,12 @@ class ProductsPDFProcessingView(APIView):
         return -1  # Invalid product
 
     def is_changed(self, row, product):
+        category = product.category
+        if category is None:
+            category = ""
+        supplier = product.supplier
+        if supplier is None:
+            supplier = ""
         return (str(row["id_product"]) != str(product.id_product) or
                 str(row["description"]) != str(product.description) or
                 Decimal(row["purchase_price"]) != product.purchase_price or
@@ -141,8 +147,8 @@ class ProductsPDFProcessingView(APIView):
                 Decimal(row["discount_surcharge"]) != product.discount_surcharge or
                 Decimal(row["critical_stock"]) != product.critical_stock or
                 str(row["exit_stock_unit"]) != str(product.exit_stock_unit) or
-                str(row["category"]) != str(product.category) or
-                str(row["supplier"]) != str(product.supplier))
+                str(row["category"]) != str(category) or
+                str(row["supplier"]) != str(supplier))
 
 
 class CategoriesPDFProcessingView(APIView):

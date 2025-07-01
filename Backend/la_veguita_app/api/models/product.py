@@ -16,7 +16,7 @@ class Product(models.Model):
     wholesale_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     wholesale_quantity = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])
     discount_surcharge = models.DecimalField(max_digits=5, decimal_places=2)
-    stock = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])
+    stock = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])  # Managed by app
     critical_stock = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])
     entry_stock_unit = models.CharField(max_length=4, choices=StockUnit.choices)  # App exclusive attribute
     exit_stock_unit = models.CharField(max_length=4, choices=StockUnit.choices)

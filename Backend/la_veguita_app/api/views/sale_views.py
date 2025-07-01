@@ -4,6 +4,7 @@ from datetime import datetime
 import re
 from django.http import JsonResponse
 from django.db import transaction
+from django.conf import settings
 from rest_framework import generics
 from rest_framework.views import APIView
 from ..models import Sale, SaleDetail, Product, Batch, LastProcessedReceipt, Category, WrongSaleDetail
@@ -23,60 +24,70 @@ class SaleRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
 class DailyStockUpdate(APIView):
     # Path to the folder synced with Google Drive
-    FOLDER_PATH = r"C:\Users\User\Desktop\test_xmls"
+    FOLDER_PATH = settings.JOURNAL_FOLDER_PATH
 
     def post(self, request, *args, **kwargs):
-
-        # Match filenames like "printer_A_123.txt"
-        pattern = re.compile(r"^(\d+)_(\d+)\.xml$")
+        # Match Journal filenames like "Journal_2025-06-26"
+        pattern = re.compile(r"^Journal_(\d{4}-\d{2}-\d{2})")
 
         try:
             # Get or create singleton row
             last_record, created = LastProcessedReceipt.objects.get_or_create(id=1)
+            last_date = last_record.last_date
             last_num = last_record.last_num
 
             new_files = []
 
-            # Get relevant file names after last_num
+            # Get relevant file names after last_date
             for filename in os.listdir(self.FOLDER_PATH):
                 match = pattern.match(filename)
                 if match:
-                    file_num = int(match.group(2))
-                    if file_num > last_num:
+                    file_date_str = match.group(1)
+                    file_date = datetime.strptime(file_date_str, "%Y-%m-%d").date()
+                    if not last_date or file_date >= last_date:
                         full_path = os.path.join(self.FOLDER_PATH, filename)
-                        new_files.append((file_num, full_path))
+                        new_files.append((file_date, full_path))
 
-            new_files.sort()  # Sort by file_num
+            new_last_num = last_num
+            new_last_date = last_date
 
             # Process files
-            for file_num, filepath in new_files:
-                self.process_journal_file(filepath)
-                print(f"Processed file {file_num}: {filepath}")
+            for file_date, filepath in new_files:
+                # returns last receipt number from this journal file
+                last_receipt_num_in_file = self.process_journal_file(filepath, new_last_num)
+                print(f"Processed Journal dated {file_date}: {filepath}")
 
-            # Update last_num in DB if new files were processed
+                # update last date and last receipt number
+                if file_date > (new_last_date or file_date):
+                    new_last_date = file_date
+                    if last_receipt_num_in_file != 0:
+                        new_last_num = last_receipt_num_in_file
+
+            # Update in DB if any new files were processed
             if new_files:
-                max_file_num = max(file_num for file_num, _ in new_files)
                 with transaction.atomic():
-                    last_record.last_num = max_file_num
+                    last_record.last_date = new_last_date
+                    last_record.last_num = new_last_num
                     last_record.save()
 
             return JsonResponse({
                 "status": "success",
                 "processed_files": [os.path.basename(f[1]) for f in new_files],
-                "new_last_num": last_record.last_num
+                "new_last_date": new_last_date,
+                "new_last_num": new_last_num
             })
 
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-    # TODO: PROCESS Journals now :C, SAVE wrong products in receipt for visualization
-    def process_journal_file(self, filepath):
+    def process_journal_file(self, filepath, last_num):
         try:
-            with open(filepath, "r", encoding="utf-8") as file:
+            with open(filepath, "r", encoding="latin1") as file:
                 content = file.read()
         except Exception as e:
             raise Exception(f"Receipt file could not be opened: {e}")
 
+        last_receipt_number = 0
         # Split into sections using separator line
         sections = content.split("------------------------------------------------------------")
 
@@ -86,8 +97,11 @@ class DailyStockUpdate(APIView):
 
             receipt = self.extract_receipt_data(section)
             if receipt:
-                self.process_receipt(receipt)
-        return
+                last_receipt_number = receipt["receipt_number"]
+                if int(last_receipt_number) > int(last_num):
+                    last_num = last_receipt_number
+                    self.process_receipt(receipt)
+        return last_num
 
     def extract_receipt_data(self, text):
         receipt = {
@@ -99,7 +113,7 @@ class DailyStockUpdate(APIView):
 
         lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
 
-        # 1. Get receipt number
+        # Get receipt number
         for line in lines:
             if "Nº BOLETA" in line:
                 match = re.search(r'Nº BOLETA\s*:\s*(\d+)', line)
@@ -107,14 +121,14 @@ class DailyStockUpdate(APIView):
                     receipt["receipt_number"] = int(match.group(1))
                 break  # assume only one per block
 
-        # 2. Get first timestamp after boleta
+        # Get first timestamp after boleta
         for line in lines:
             ts_match = re.search(r'\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}:\d{2}', line)
             if ts_match:
                 receipt["datetime"] = datetime.strptime(ts_match.group(), '%d-%m-%Y %H:%M:%S')
                 break
 
-        # 3. Get total
+        # Get total
         for line in lines:
             if line.startswith("TOTAL :"):
                 match = re.search(r'TOTAL\s*:\s*\$?\s*([\d.,]+)', line)
@@ -123,7 +137,7 @@ class DailyStockUpdate(APIView):
                     receipt["total_amount"] = int(total_str)
                 break
 
-        # 4. Get product lines
+        # Get product lines
         products = []
         for i in range(len(lines) - 1):
             qty_line = lines[i]
@@ -177,7 +191,7 @@ class DailyStockUpdate(APIView):
                     category = Category.objects.get(id_category=sale_detail[
                         "id_product"].strip())  # Check if receipt is wrongly made (Category as product)
                     if category.name.strip() == sale_detail["name"]:  # Confirm wrongly made receipt
-                        self.register_wrong_sale_detail(receipt["receipt_number"], sale_detail)
+                        self.register_wrong_sale_detail(sale_detail)
                         continue
                 except Category.DoesNotExist:
                     if invalid:
@@ -240,18 +254,18 @@ class DailyStockUpdate(APIView):
         except Batch.DoesNotExist:
             print(f"WARNING: Product {str(product.description)} does not have non empty batch available. Batch quantity discarded: {str(quantity)}")
 
-    def register_wrong_sale_detail(self, receipt_number, sale_detail):
+    def register_wrong_sale_detail(self, sale_detail):
         wrong_sale_data = {
-            'receipt_number': receipt_number,
-            'name': sale_detail["name"],
+            'barcode': sale_detail["id_product"],
             'quantity': sale_detail["quantity"],
             'subtotal': sale_detail["subtotal"]
         }
 
         try:  # if multiple wrong sales in same receipt acumulate quantity and subtotal
-            wrong_sale = WrongSaleDetail.objects.get(receipt_number=receipt_number)
+            wrong_sale = WrongSaleDetail.objects.get(name=sale_detail["name"])
+            wrong_sale.barcode = sale_detail['id_product']
             wrong_sale.quantity += sale_detail['quantity']
             wrong_sale.subtotal += sale_detail['subtotal']
             wrong_sale.save()
         except WrongSaleDetail.DoesNotExist:
-            WrongSaleDetail.objects.create(receipt_number=receipt_number, **wrong_sale_data)
+            WrongSaleDetail.objects.create(name=sale_detail["name"], **wrong_sale_data)
