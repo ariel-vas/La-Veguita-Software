@@ -94,7 +94,7 @@ DATABASES = {
     }
 }
 
-JOURNAL_FOLDER_PATH = "/home/azureuser/srv/xml"
+JOURNAL_FOLDER_PATH = "/home/azureuser/srv/journals"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
