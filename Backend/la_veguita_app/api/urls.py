@@ -33,7 +33,7 @@ urlpatterns = [
     path('sales/report/ProductSalesVariance/', views.ProductSalesVarianceView.as_view(), name='product_sales_variance'),
     path('sales/product/<int:id_product>/monthly/', views.MonthlyProductSalesView.as_view()),
     path("suppliers/", views.SupplierListCreate.as_view(), name="supplier-create-list"),
-    path("suppliers/<int:id_supplier>", views.SupplierRetrieveUpdateDestroy.as_view(), name="supplier-retrieve-update-destroy"),
+    path("suppliers/<str:rut>", views.SupplierRetrieveUpdateDestroy.as_view(), name="supplier-retrieve-update-destroy"),
     path("notifications/", views.NotificationListCreate.as_view(), name="notification-create-list"),
     path("notifications/<int:id_notification>", views.NotificationRetrieveUpdateDestroy.as_view(), name="notification-retrieve-update-destroy"),
     path('products-pdf/', views.ProductsPDFProcessingView.as_view(), name='products-pdf'),

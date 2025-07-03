@@ -10,7 +10,7 @@
         <!-- RUT -->
         <label for="name" class="font-semibold mb-3">RUT</label>
         <input
-          id="name"
+          id="rut"
           type="text"
           v-model="proveedor.rut"
           required
@@ -34,7 +34,7 @@
         <!-- Giro -->
         <label for="name" class="font-semibold mb-3">Giro</label>
         <input
-          id="name"
+          id="line"
           type="text"
           v-model="proveedor.line"
           required
@@ -46,7 +46,7 @@
         <!-- Dirección -->
         <label for="name" class="font-semibold mb-3">Dirección</label>
         <input
-          id="name"
+          id="address"
           type="text"
           v-model="proveedor.address"
           required
@@ -58,7 +58,7 @@
         <!-- Comuna -->
         <label for="name" class="font-semibold mb-3">Comuna</label>
         <input
-          id="name"
+          id="commune"
           type="text"
           v-model="proveedor.commune"
           required
@@ -70,7 +70,7 @@
         <!-- Ciudad -->
         <label for="name" class="font-semibold mb-3">Ciudad</label>
         <input
-          id="name"
+          id="city"
           type="text"
           v-model="proveedor.city"
           required
@@ -82,7 +82,7 @@
         <!-- Teléfono Fijo -->
         <label for="name" class="font-semibold mb-3">Teléfono Fijo</label>
         <input
-          id="name"
+          id="telephone"
           type="text"
           v-model="proveedor.telephone"
           class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
@@ -93,7 +93,7 @@
         <!-- Celular -->
         <label for="name" class="font-semibold mb-3">Celular</label>
         <input
-          id="name"
+          id="cellphone"
           type="text"
           v-model="proveedor.cellphone"
           class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
@@ -104,7 +104,7 @@
         <!-- Correo -->
         <label for="name" class="font-semibold mb-3">Correo</label>
         <input
-          id="name"
+          id="email"
           type="text"
           v-model="proveedor.email"
           class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2 mb-3"
@@ -181,7 +181,7 @@ export default {
         this.proveedor.rut = ''; // Limpia el campo después de crear
         this.proveedor.name = ''; // Limpia el campo después de crear
         this.proveedor.line = ''; // Limpia el campo después de crear
-        this.proveedor.direction = ''; // Limpia el campo después de crear
+        this.proveedor.address = ''; // Limpia el campo después de crear
         this.proveedor.commune = ''; // Limpia el campo después de crear
         this.proveedor.city = ''; // Limpia el campo después de crear
         this.proveedor.cellphone = ''; // Limpia el campo después de crear

@@ -21,14 +21,14 @@
       <tbody>
         <tr
           v-for="supplier in displayedSuppliers"
-          :key="supplier.id_supplier"
+          :key="supplier.id"
           class="border-b hover:bg-[#f0f8e9]"
         >
           <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ supplier.name }}</td>
           <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ supplier.line }}</td>
           <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
             <button
-              @click="navigateToPage(supplier.id_supplier)"
+              @click="navigateToPage(supplier.rut)"
               class="bg-[#8bc34a] text-white px-4 py-1 rounded hover:bg-[#7cb342] transition"
             >
               Editar
@@ -36,7 +36,7 @@
           </td>
           <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
             <button
-              @click="navigateToPageView(supplier.id_supplier)"
+              @click="navigateToPageView(supplier.rut)"
               class="bg-[#8bc34a] text-white px-4 py-1 rounded hover:bg-[#7cb342] transition"
             >
               Ver Detalle
@@ -169,11 +169,11 @@ export default {
         this.error = err.message;
       }
     },
-    navigateToPage(id_supplier) { 
-      this.$router.push({ path: `/detalleProveedor/${id_supplier}` });
+    navigateToPage(id) { 
+      this.$router.push({ path: `/detalleProveedor/${id}` });
     },
-    navigateToPageView(id_supplier) {
-      this.$router.push({ path: `/detalleProveedorNoMod/${id_supplier}` });
+    navigateToPageView(id) {
+      this.$router.push({ path: `/detalleProveedorNoMod/${id}` });
     },
     changePage(page) {
       if (page >= 1 && page <= this.totalPages) {
