@@ -16,14 +16,15 @@ class Product(models.Model):
     wholesale_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     wholesale_quantity = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])
     discount_surcharge = models.DecimalField(max_digits=5, decimal_places=2)
-    stock = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])
+    stock = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])  # Managed by app
     critical_stock = models.DecimalField(max_digits=12, decimal_places=4, validators=[MinValueValidator(0)])
     entry_stock_unit = models.CharField(max_length=4, choices=StockUnit.choices)  # App exclusive attribute
-    exit_stock_unit = models.CharField(max_length=4, choices=StockUnit.choices)  # App exclusive attribute
+    exit_stock_unit = models.CharField(max_length=4, choices=StockUnit.choices)
     composed_product = models.BooleanField(default=False)  # App exclusive attribute
     checked = models.BooleanField(default=False)  # Dinamically toggled through frontend
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='products', null=True, blank=True)
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, related_name='products', null=True, blank=True)
+    active = models.BooleanField(default=True)  # Turned false when deleted
 
     def __str__(self):
         return f"{self.id_product}: {self.description}, {str(self.purchase_price)}, {str(self.sale_price)}, {self.exit_stock_unit}"

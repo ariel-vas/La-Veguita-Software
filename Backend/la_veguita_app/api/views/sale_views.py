@@ -2,13 +2,12 @@ from django.shortcuts import render
 import os
 from datetime import datetime
 import re
-import xml.etree.ElementTree as ET
-from decimal import Decimal
 from django.http import JsonResponse
 from django.db import transaction
+from django.conf import settings
 from rest_framework import generics
 from rest_framework.views import APIView
-from ..models import Sale, SaleDetail, Product, Batch, LastProcessedReceipt
+from ..models import Sale, SaleDetail, Product, Batch, LastProcessedReceipt, Category, WrongSaleDetail
 from ..serializers import SaleSerializer
 
 
@@ -25,103 +24,199 @@ class SaleRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
 class DailyStockUpdate(APIView):
     # Path to the folder synced with Google Drive
-    FOLDER_PATH = r"C:\Users\User\Desktop\test_xmls"
+    FOLDER_PATH = settings.JOURNAL_FOLDER_PATH
 
     def post(self, request, *args, **kwargs):
-
-        # Match filenames like "printer_A_123.txt"
-        pattern = re.compile(r"^(\d+)_(\d+)\.xml$")
+        # Match Journal filenames like "Journal_2025-06-26"
+        pattern = re.compile(r"^Journal_(\d{4}-\d{2}-\d{2})")
 
         try:
             # Get or create singleton row
             last_record, created = LastProcessedReceipt.objects.get_or_create(id=1)
+            last_date = last_record.last_date
             last_num = last_record.last_num
 
             new_files = []
 
-            # Get relevant file names after last_num
+            # Get relevant file names after last_date
             for filename in os.listdir(self.FOLDER_PATH):
                 match = pattern.match(filename)
                 if match:
-                    file_num = int(match.group(2))
-                    if file_num > last_num:
+                    file_date_str = match.group(1)
+                    file_date = datetime.strptime(file_date_str, "%Y-%m-%d").date()
+                    if not last_date or file_date >= last_date:
                         full_path = os.path.join(self.FOLDER_PATH, filename)
-                        new_files.append((file_num, full_path))
+                        new_files.append((file_date, full_path))
 
-            new_files.sort()  # Sort by file_num
+            new_last_num = last_num
+            new_last_date = last_date
 
             # Process files
-            for file_num, filepath in new_files:
-                self.process_receipt(filepath)
-                print(f"Processed file {file_num}: {filepath}")
+            for file_date, filepath in new_files:
+                # returns last receipt number from this journal file
+                last_receipt_num_in_file = self.process_journal_file(filepath, new_last_num)
+                print(f"Processed Journal dated {file_date}: {filepath}")
 
-            # Update last_num in DB if new files were processed
+                # update last date and last receipt number
+                if file_date > (new_last_date or file_date):
+                    new_last_date = file_date
+                    if last_receipt_num_in_file != 0:
+                        new_last_num = last_receipt_num_in_file
+
+            # Update in DB if any new files were processed
             if new_files:
-                max_file_num = max(file_num for file_num, _ in new_files)
                 with transaction.atomic():
-                    last_record.last_num = max_file_num
+                    last_record.last_date = new_last_date
+                    last_record.last_num = new_last_num
                     last_record.save()
 
             return JsonResponse({
                 "status": "success",
                 "processed_files": [os.path.basename(f[1]) for f in new_files],
-                "new_last_num": last_record.last_num
+                "new_last_date": new_last_date,
+                "new_last_num": new_last_num
             })
 
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-    def process_receipt(self, filepath):
+    def process_journal_file(self, filepath, last_num):
         try:
-            with open(filepath, "r", encoding="utf-8") as file:
-                xml_content = file.read()
+            with open(filepath, "r", encoding="latin1") as file:
+                content = file.read()
         except Exception as e:
-            raise Exception("Receipt file could not be opened")
+            raise Exception(f"Receipt file could not be opened: {e}")
 
-        mod_timestamp = os.path.getmtime(filepath)
-        fecha_emision = datetime.fromtimestamp(mod_timestamp)
+        last_receipt_number = 0
+        # Split into sections using separator line
+        sections = content.split("------------------------------------------------------------")
+
+        for section in sections:
+            if "Nº BOLETA" not in section:
+                continue  # Skip non-receipts
+
+            receipt = self.extract_receipt_data(section)
+            if receipt:
+                last_receipt_number = receipt["receipt_number"]
+                if int(last_receipt_number) > int(last_num):
+                    last_num = last_receipt_number
+                    self.process_receipt(receipt)
+        return last_num
+
+    def extract_receipt_data(self, text):
+        receipt = {
+            "receipt_number": None,
+            "datetime": None,
+            "total_amount": None,
+            "products": []
+        }
+
+        lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
+
+        # Get receipt number
+        for line in lines:
+            if "Nº BOLETA" in line:
+                match = re.search(r'Nº BOLETA\s*:\s*(\d+)', line)
+                if match:
+                    receipt["receipt_number"] = int(match.group(1))
+                break  # assume only one per block
+
+        # Get first timestamp after boleta
+        for line in lines:
+            ts_match = re.search(r'\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}:\d{2}', line)
+            if ts_match:
+                receipt["datetime"] = datetime.strptime(ts_match.group(), '%d-%m-%Y %H:%M:%S')
+                break
+
+        # Get total
+        for line in lines:
+            if line.startswith("TOTAL :"):
+                match = re.search(r'TOTAL\s*:\s*\$?\s*([\d.,]+)', line)
+                if match:
+                    total_str = match.group(1).replace('.', '').replace(',', '')
+                    receipt["total_amount"] = int(total_str)
+                break
+
+        # Get product lines
         products = []
-        try:
-            root = ET.fromstring(xml_content)
+        for i in range(len(lines) - 1):
+            qty_line = lines[i]
+            prod_line = lines[i + 1]
 
-            # Extract basic fields
-            total = root.findtext('total')
+            # Match quantity line like "1 X", "3 X"
+            qty_match = re.match(r'^(\d+)\s+X\b', qty_line)
+            if not qty_match:
+                continue
 
-            # Extract sale detail list
-            for sale_detail in root.findall('./detalle_articulos/producto'):
-                # Extracting relevant data
-                desc = sale_detail.findtext('descripcion')
-                quantity = int(sale_detail.findtext('cantidad'))
-                subtotal = Decimal(sale_detail.findtext('subtotal'))
+            quantity = int(qty_match.group(1))
 
-                # Obtaining product and removing stock
-                product = Product.objects.get(description=desc.strip())
-                self.discount_stock(product, quantity, subtotal)
+            # Match product line: BARCODE (no spaces), then NAME, then PRICE at end
+            match = re.match(r'^\s*(\S+)\s+(.+?)\s+(\d+)$', prod_line)
+            if match:
+                barcode = match.group(1)
+                name = match.group(2).strip()
+                price = int(match.group(3).replace(',', '').replace('.', ''))
 
-                # Put correct quantity value if unit is kilo
-                if product.exit_stock_unit == 'kilo':
-                    kilo_quantity = self.kilo_quantity_calc(product, subtotal)
-                    if kilo_quantity is not None:
-                        quantity = kilo_quantity
+                products.append({
+                    "id_product": barcode,
+                    "name": name,
+                    "quantity": quantity,
+                    "subtotal": price
+                })
+
+        receipt["products"] = products
+
+        # Validate receipt
+        if receipt["receipt_number"] and receipt["datetime"] and receipt["total_amount"] and receipt["products"]:
+            return receipt
+        return None
+
+    def process_receipt(self, receipt):
+        products = []
+        # Extract sale detail list
+        for sale_detail in receipt["products"]:
+            product = None
+            invalid = False
+            invalid_name = False
+            # Obtaining product and handling errors
+            try:
+                product = Product.objects.get(id_product=sale_detail["id_product"].strip())
+                if product.description.strip() != sale_detail["name"]:
+                    invalid_name = True
+            except Product.DoesNotExist:
+                invalid = True
+
+            if invalid or invalid_name:  # Suspicion of wrong_sale_detail
+                try:
+                    category = Category.objects.get(id_category=sale_detail[
+                        "id_product"].strip())  # Check if receipt is wrongly made (Category as product)
+                    if category.name.strip() == sale_detail["name"]:  # Confirm wrongly made receipt
+                        self.register_wrong_sale_detail(sale_detail)
+                        continue
+                except Category.DoesNotExist:
+                    if invalid:
+                        continue
+
+            if product:
+                self.discount_stock(product, sale_detail["quantity"])
 
                 # Adding product data
                 product_data = {
                     'product': product,
-                    'quantity': quantity,
+                    'quantity': sale_detail["quantity"],
                     'unit': product.exit_stock_unit,
                     'unit_price': product.sale_price,
-                    'subtotal': subtotal,
+                    'subtotal': sale_detail["subtotal"],
                 }
                 products.append(product_data)
-        except Exception as e:
-            raise Exception(f"File does not match Receipt format: {str(e)}")
 
-        if fecha_emision is None or total is None or len(products) == 0:
-            raise Exception("File does not match Receipt format")
+        if receipt["receipt_number"] is None or receipt["total_amount"] is None or len(receipt["products"]) == 0:
+            raise Exception("Data does not match Receipt format")
 
         sale_data = {
-            'datetime': fecha_emision,
-            'total_amount': total,
+            'receipt_number': receipt["receipt_number"],
+            'datetime': receipt["datetime"],
+            'total_amount': receipt["total_amount"],
         }
 
         # Printing results
@@ -143,16 +238,8 @@ class DailyStockUpdate(APIView):
                 except SaleDetail.DoesNotExist:
                     SaleDetail.objects.create(sale=sale, **detail)
 
-    def discount_stock(self, product, quantity, subtotal):
-        # Product stock update
-        if product.exit_stock_unit == "kilo":
-            quantity = self.kilo_quantity_calc(product, subtotal)
-            if quantity is None:
-                print("WARNING: Product has sale price 0 and unit kilo, cannot calculate quantity, skipping...")
-                return
-            product.stock = max(0, product.stock - quantity)
-        elif product.exit_stock_unit == "unit":
-            product.stock = max(0, product.stock - quantity)
+    def discount_stock(self, product, quantity):
+        product.stock = max(0, product.stock - quantity)
         product.save()
 
         # Batch stock update
@@ -167,7 +254,18 @@ class DailyStockUpdate(APIView):
         except Batch.DoesNotExist:
             print(f"WARNING: Product {str(product.description)} does not have non empty batch available. Batch quantity discarded: {str(quantity)}")
 
-    def kilo_quantity_calc(self, product, subtotal):
-        if product.sale_price == 0:
-            return None
-        return subtotal / (product.sale_price * (1 + product.discount_surcharge))
+    def register_wrong_sale_detail(self, sale_detail):
+        wrong_sale_data = {
+            'barcode': sale_detail["id_product"],
+            'quantity': sale_detail["quantity"],
+            'subtotal': sale_detail["subtotal"]
+        }
+
+        try:  # if multiple wrong sales in same receipt acumulate quantity and subtotal
+            wrong_sale = WrongSaleDetail.objects.get(name=sale_detail["name"])
+            wrong_sale.barcode = sale_detail['id_product']
+            wrong_sale.quantity += sale_detail['quantity']
+            wrong_sale.subtotal += sale_detail['subtotal']
+            wrong_sale.save()
+        except WrongSaleDetail.DoesNotExist:
+            WrongSaleDetail.objects.create(name=sale_detail["name"], **wrong_sale_data)

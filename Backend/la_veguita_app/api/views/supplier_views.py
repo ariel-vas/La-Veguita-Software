@@ -3,6 +3,7 @@ from rest_framework import generics
 from ..models import Supplier
 from ..serializers import SupplierSerializer
 
+
 class SupplierListCreate(generics.ListCreateAPIView):
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
@@ -11,4 +12,4 @@ class SupplierListCreate(generics.ListCreateAPIView):
 class SupplierRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
-    lookup_field = "id_supplier"
+    lookup_field = "rut"

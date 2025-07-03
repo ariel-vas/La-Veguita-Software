@@ -76,8 +76,8 @@
     cargando.value = true
 
     try {
-      await fetch(`${config.public.apiBase}/api/stock/importar`, { method: 'POST' })
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await fetch(`${config.public.apiBase}/api/daily-stock-update/`, { method: 'POST' })
+      await new Promise(resolve => setTimeout(resolve, 20000))
       router.push('/')
       alert('Se cargó el archivo correctamente.')
     } catch (error) {
