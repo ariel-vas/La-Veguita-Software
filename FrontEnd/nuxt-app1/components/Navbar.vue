@@ -3,15 +3,19 @@
   <nav class="bg-[#8bc34a] text-white w-full sticky top-0 shadow">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
-        <NuxtLink to="/" class="flex items-center shrink-0">
+        <NuxtLink
+          to="/"
+          class="flex items-center shrink-0 px-2 py-0 rounded-xl transition-all duration-200"
+        >
           <img
             src="/laveguitalogo-removebg-preview.png"
             alt="Icono LVG"
             class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain mr-2"
           />
-          <span class="text-lg sm:text-xl font-bold truncate">La Veguita</span>
+          <span class="text-lg sm:text-xl font-bold truncate text-white">La Veguita</span>
         </NuxtLink>
 
+          
         <div class="hidden md:flex space-x-4 flex-grow justify-end min-w-0">
           <div class="flex items-center space-x-2">
             <button
@@ -35,8 +39,9 @@
               </div>
             </button>
 
-            <NuxtLink to="/productos" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Productos</NuxtLink>
-
+            <NuxtLink to="/agregarlote" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition" :class="activePage === 'agregarlote' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingreso x Lote</NuxtLink>
+            <NuxtLink to="/agregarstock" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition" :class="activePage === 'agregarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingreso Unitario</NuxtLink>
+            <NuxtLink to="/quitarstock" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition" :class="activePage === 'quitarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Salida Unitaria</NuxtLink>
             <div class="relative" @mouseleave="submenuOpen = false">
               <button
                 @click="submenuOpen = !submenuOpen"
@@ -61,44 +66,39 @@
                 @mouseenter="submenuOpen = true"
                 @mouseleave="submenuOpen = false"
               >
-                <NuxtLink to="/categorias" class="block px-8 py-2 hover:bg-gray-100">Categorías</NuxtLink>
-                <NuxtLink to="/subcategorias" class="block px-8 py-2 hover:bg-gray-100">Sub-Categorías</NuxtLink>
-                <NuxtLink to="/proveedores" class="block px-8 py-2 hover:bg-gray-100">Proveedores</NuxtLink>
-                <NuxtLink to="/notificaciones" class="block px-8 py-2 hover:bg-gray-100">Notificaciones</NuxtLink>
-                <NuxtLink to="/crearproducto" class="block px-8 py-2 hover:bg-gray-100">Crear Producto</NuxtLink>
-                <NuxtLink to="/importar-productos" class="block px-8 py-2 hover:bg-gray-100">Importar Productos</NuxtLink>
-                <NuxtLink to="/importar-familias" class="block px-8 py-2 hover:bg-gray-100">Importar Familias</NuxtLink>
+                <NuxtLink to="/productos" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'productos' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Productos</NuxtLink>
+                <NuxtLink to="/categorias" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'categorias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Categorías</NuxtLink>
+                <NuxtLink to="/subcategorias" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'subcategorias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Sub-Categorías</NuxtLink>
+                <NuxtLink to="/proveedores" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'proveedores' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Proveedores</NuxtLink>
+                <NuxtLink to="/notificaciones" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'notificaciones' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Notificaciones</NuxtLink>
+                <NuxtLink to="/crearproducto" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'crearproducto' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Crear Producto</NuxtLink>
+                <NuxtLink to="/importar-productos" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'importar-productos' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Importar Productos</NuxtLink>
+                <NuxtLink to="/importar-familias" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'importar-familias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Importar Familias</NuxtLink>
+                <NuxtLink to="/informes" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'informes' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Informes</NuxtLink>
               </div>
             </div>
-            
-            <NuxtLink to="/informes" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Informes</NuxtLink>
-
-            <button @click="openLoginModal" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition">Ingresar</button>
+            <button @click="openLoginModal" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition" :class="isLoginModalOpen ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingresar</button>
           </div>
         </div>
-        
         <!-- Botón campana + hamburguesa en móvil -->
         <div class="flex items-center space-x-2 md:hidden">
+          <!-- Bloque central (nombre de sección actual) -->
+          <div v-if="mobileActiveSection" class="pointer-events-auto">
+            <NuxtLink
+              :to="mobileActiveSection.link"
+              class="bg-[#689f38] text-white text-sm font-bold px-3 py-1 rounded-md truncate"
+            >
+              {{ mobileActiveSection.label }}
+            </NuxtLink>
+          </div>
+
           <!-- Botón campana -->
           <button
             @click="openAlertModal"
             class="relative group"
             title="Productos por vencer"
           >
-            <div class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
-                :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
-              <svg xmlns="http://www.w3.org/2000/svg"
-                  :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
-                  class="w-6 h-6 transition"
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
-              </svg>
-              <span v-if="notificaciones.length > 0"
-                    class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md">
-                {{ notificaciones.length }}
-              </span>
-            </div>
+            <!-- ... icono campana con notificaciones ... -->
           </button>
 
           <!-- Botón hamburguesa -->
@@ -110,7 +110,6 @@
             ☰
           </button>
         </div>
-
       </div>
     </div>
   </nav>
@@ -129,6 +128,7 @@
         <NuxtLink
           :to="item.link"
           class="hover:bg-[#7cb342] px-3 py-2 rounded-md flex-grow"
+          :class="activePage === item.link.replace('/', '') ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
           @click="menuOpen = false"
         >
           {{ item.label }}
@@ -139,6 +139,7 @@
         v-else
         :key="'navitem-action-' + item.label + '-' + index"
         @click="() => { item.action(); menuOpen = false }"
+        :class="isLoginModalOpen ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
         class="hover:bg-[#7cb342] px-3 py-2 rounded-md text-left"
       >
         {{ item.label }}
@@ -236,8 +237,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-
+import { ref, onMounted, computed, watchEffect, capitalize } from 'vue'
+import { useRoute } from 'vue-router'
+const route = useRoute()
+const activePage = ref('')
 const isLoginModalOpen = ref(false)
 const showAlertModal = ref(false)
 const menuOpen = ref(false)
@@ -248,6 +251,37 @@ const mostrarAviso = ref(false)
 const mensajeAviso = ref('')
 const submenuOpen = ref(false)
 const ocultarNotificaciones = ref(new Set()) // Para la funcionalidad de posponer
+watchEffect(() => {
+  const path = route.path || ''
+
+  if (path.startsWith('/productos')) {
+    activePage.value = 'productos'
+  } else if (path.startsWith('/categorias')) {
+    activePage.value = 'categorias'
+  } else if (path.startsWith('/subcategorias')) {
+    activePage.value = 'subcategorias'
+  } else if (path.startsWith('/proveedores')) {
+    activePage.value = 'proveedores'
+  } else if (path.startsWith('/crearproducto')) {
+    activePage.value = 'crearproducto'
+  } else if (path.startsWith('/importar-productos')) {
+    activePage.value = 'importar-productos'
+  } else if (path.startsWith('/importar-familias')) {
+    activePage.value = 'importar-familias'
+  } else if (path.startsWith('/notificaciones')) {
+    activePage.value = 'notificaciones'
+  } else if (path.startsWith('/informes')) {
+    activePage.value = 'informes'
+  } else if (path.startsWith('/agregarlote')) {
+    activePage.value = 'agregarlote'
+  } else if (path.startsWith('/agregarstock')) {
+    activePage.value = 'agregarstock'
+  } else if (path.startsWith('/quitarstock')) {
+    activePage.value = 'quitarstock'
+  } else {
+    activePage.value = '' // Nada activo
+  }
+})
 
 // Computed property para las notificaciones que se mostrarán en el modal, ya filtradas y ordenadas
 const displayedNotifications = computed(() => {
@@ -395,6 +429,29 @@ const cargarNotificaciones = async () => {
     console.error('Error cargando notificaciones principales:', error)
   }
 }
+const ingresoLabel = computed(() => {
+  if (activePage.value === 'agregarlote') return 'Ingreso x Lote'
+  if (activePage.value === 'agregarstock') return 'Ingreso Unitario'
+  if (activePage.value === 'quitarstock') return 'Salida Unitaria'
+  return ''
+})
+const allPagesLabels = {
+  agregarlote: { label: 'Ingreso x Lote', link: '/agregarlote' },
+  agregarstock: { label: 'Ingreso Unitario', link: '/agregarstock' },
+  quitarstock: { label: 'Salida Unitaria', link: '/quitarstock' },
+  productos: { label: 'Productos', link: '/productos' },
+  categorias: { label: 'Categorías', link: '/categorias' },
+  subcategorias: { label: 'Sub-Categorías', link: '/subcategorias' },
+  proveedores: { label: 'Proveedores', link: '/proveedores' },
+  informes: { label: 'Informes', link: '/informes' },
+  notificaciones: { label: 'Notificaciones', link: '/notificaciones' },
+  'importar-productos': { label: 'Importar Productos', link: '/importar-productos' },
+  'importar-familias': { label: 'Importar Familias', link: '/importar-familias' },
+  crearproducto: { label: 'Crear Producto', link: '/crearproducto' }
+};
+const mobileActiveSection = computed(() => {
+  return allPagesLabels[activePage.value] || null;
+});
 
 onMounted(() => {
   cargarNotificaciones()

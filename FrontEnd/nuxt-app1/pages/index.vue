@@ -46,14 +46,6 @@
         <HomeBox class="md:w-auto" title="Salida de Stock Unitario" to="/quitarstock" />
       </div>
     </div>
-
-    <!-- Crear producto
-    <div class="bg-purple-100 border border-purple-300 rounded-2xl p-6 w-full max-w-3xl shadow-md">
-      <h2 class="text-2xl font-semibold text-purple-700 mb-4">Productos</h2>
-      <div class="flex justify-center">
-        <HomeBox title="Crear un producto" to="/crearproducto" />
-      </div>
-    </div>-->
   </div> 
 </template>
 
