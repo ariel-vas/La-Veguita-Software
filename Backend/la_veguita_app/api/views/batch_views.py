@@ -25,7 +25,7 @@ class BatchExpiringSoonView(APIView):
         threshold_date = today + timedelta(days=5)
 
         # 1. Filtrar los batches que vencen en ≤ 5 días o ya vencieron
-        batches = Batch.objects.filter(expiration_date__lte=threshold_date)
+        batches = Batch.objects.filter(expiration_date__lte=threshold_date).exclude(quantity=0)
 
         # 2. Para cada batch, revisar si ya tiene una notificación
         created_notifications = []

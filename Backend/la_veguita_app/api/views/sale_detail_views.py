@@ -229,7 +229,7 @@ class MonthlyRevenueVsCostByProductView(APIView):
             año=ExtractYear('entry_date'),
             mes=ExtractMonth('entry_date')
         ).values('año', 'mes').annotate(
-            cantidad=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
+            cantidad=Coalesce(Sum('starting_quantity', output_field=DecimalField()), 0, output_field=DecimalField())
         ).order_by('año', 'mes')
 
         cantidad_dict = {(item['año'], item['mes']): float(item['cantidad']) for item in cantidad_por_mes}
@@ -354,7 +354,7 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
             año=ExtractYear('entry_date'),
             mes=ExtractMonth('entry_date')
         ).values('año', 'mes', 'product__id_product').annotate(
-            cantidad=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
+            cantidad=Coalesce(Sum('starting_quantity', output_field=DecimalField()), 0, output_field=DecimalField())
         )
 
         # Calcular costo mensual: sumar por producto (cantidad * precio compra)
@@ -448,7 +448,7 @@ class MonthlyGrossProfitView(APIView):
         ).annotate(
             mes=ExtractMonth('entry_date')
         ).values('mes', 'product__id_product').annotate(
-            cantidad=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
+            cantidad=Coalesce(Sum('starting_quantity', output_field=DecimalField()), 0, output_field=DecimalField())
         )
 
         # Calcular costos por mes
@@ -524,7 +524,7 @@ class Top10MostProfitableProductsView(APIView):
         ).values(
             'product__id_product'
         ).annotate(
-            cantidad_total=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
+            cantidad_total=Coalesce(Sum('starting_quantity', output_field=DecimalField()), 0, output_field=DecimalField())
         )
 
         # Calcular costos por producto
@@ -636,7 +636,7 @@ class ProductInventoryFlowView(APIView):
             mes=ExtractMonth('entry_date'),
             año=ExtractYear('entry_date')
         ).values('mes', 'año').annotate(
-            cantidad_ingresada=Coalesce(Sum('quantity', output_field=DecimalField()), 0, output_field=DecimalField())
+            cantidad_ingresada=Coalesce(Sum('starting_quantity', output_field=DecimalField()), 0, output_field=DecimalField())
         )
 
         # Crear diccionario de restock (mes, año) -> datos
