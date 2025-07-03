@@ -9,6 +9,15 @@
       + Agregar Proveedor
     </button>
 
+    <div class="flex flex-col sm:flex-row sm:items-end gap-4 mb-6 w-full max-w-2xl">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Buscar proveedor por Nombre o Giro..."
+        class="p-3 w-full text-lg border-2 border-[#8bc34a] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8bc34a] text-[#000000]"
+      />
+    </div>
+
     <table class="bg-white rounded-xl shadow overflow-hidden">
       <thead class="bg-[#8bc34a] text-white">
         <tr>
@@ -117,22 +126,59 @@
 export default {
   data() {
     return {
-      suppliers: [],
-      error: '',
       currentPage: 1,
       itemsPerPage: 20,
       maxVisiblePages: 5,
+      suppliers: [],
+      error: '',
+      searchQuery: '',
+      supplier: null,
+      allSuppliers: [],
     };
   },
-
-  computed: {
+computed: {
     displayedSuppliers() {
+      let filtered = this.allSuppliers;
+
+      if (this.searchQuery.trim()) {
+        const q = this.searchQuery.trim().toLowerCase();
+        filtered = filtered.filter(p =>
+          p.name.toLowerCase().includes(q) || p.line.toLowerCase().includes(q)
+        );
+      }
+
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
-      return this.suppliers.slice(start, end);
+
+    return filtered.slice(start, end);
+    },
+    totalSuppliers() {
+      let filtered = this.allSuppliers;
+
+      if (this.searchQuery.trim()) {
+        const q = this.searchQuery.trim().toLowerCase();
+        filtered = filtered.filter(p =>
+          p.name.toLowerCase().includes(q) || p.line.toLowerCase().includes(q)
+        );
+      }
+
+      return filtered.length;
     },
     totalPages() {
-      return Math.ceil(this.suppliers.length / this.itemsPerPage);
+      return Math.ceil(this.totalSuppliers / this.itemsPerPage);
+    },
+    currentRange() {
+      const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+      const end = Math.min(start + this.itemsPerPage - 1, this.totalSuppliers);
+      return `${start}-${end}`;
+    },
+    totalPages() {
+      return Math.ceil(this.totalSuppliers / this.itemsPerPage);
+    },
+    currentRange() {
+      const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+      const end = Math.min(start + this.itemsPerPage - 1, this.totalSuppliers);
+      return `${start}-${end}`;
     },
     visiblePages() {
       const pages = [];
@@ -150,26 +196,20 @@ export default {
 
       return pages;
     },
-    currentRange() {
-      const start = (this.currentPage - 1) * this.itemsPerPage + 1;
-      const end = Math.min(start + this.itemsPerPage - 1, this.suppliers.length);
-      return `${start}-${end}`;
-    },
   },
-
   methods: {
-    async fetchSuppliers() { 
+    async fetchSuppliers() {
       try {
         const config = useRuntimeConfig();
         const response = await fetch(`${config.public.apiBase}/api/suppliers/`);
         if (!response.ok) throw new Error('Error cargando proveedores');
         const data = await response.json();
-        this.suppliers = data;
+        this.allSuppliers = data;
       } catch (err) {
         this.error = err.message;
       }
     },
-    navigateToPage(id) { 
+    navigateToPage(id) {
       this.$router.push({ path: `/detalleProveedor/${id}` });
     },
     navigateToPageView(id) {
@@ -181,13 +221,8 @@ export default {
       }
     },
   },
-
   mounted() {
-    this.fetchSuppliers(); // Llama a la nueva función al montar el componente
+    this.fetchSuppliers();
   },
 };
 </script>
-
-<style scoped>
-/* Puedes mantener los estilos existentes ya que la estructura HTML es similar */
-</style>
