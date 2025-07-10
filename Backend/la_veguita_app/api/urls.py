@@ -38,5 +38,6 @@ urlpatterns = [
     path("notifications/<int:id_notification>", views.NotificationRetrieveUpdateDestroy.as_view(), name="notification-retrieve-update-destroy"),
     path('products-pdf/', views.ProductsPDFProcessingView.as_view(), name='products-pdf'),
     path('categories-pdf/', views.CategoriesPDFProcessingView.as_view(), name='categories-pdf'),
+    path('suppliers-pdf/', views.SuppliersPDFProcessingView.as_view(), name='suppliers-pdf'),
     path('daily-stock-update/', views.DailyStockUpdate.as_view(), name='daily-stock-update'),
 ]
