@@ -38,8 +38,7 @@ class ProductSerializer(serializers.ModelSerializer):
                   'entry_stock_unit',
                   'exit_stock_unit',
                   'composed_product',
-                  'checked',
-                  'category', 'supplier', 'subcategories']
+                  'category', 'supplier', 'subcategories', 'active']
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

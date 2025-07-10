@@ -295,9 +295,9 @@ class SuppliersPDFProcessingView(APIView):
                     for page in pdf.pages:
                         for table in page.extract_tables():
                             for row in table:
-                                valid_row = self.get_validated_category_row(row)
+                                valid_row = self.get_validated_supplier_row(row)
                                 if valid_row is not None:
-                                    created = self.create_or_modify_category(valid_row)
+                                    created = self.create_or_modify_supplier(valid_row)
                                     if created == -1:
                                         invalid_count += 1
                                     elif created == 0:
