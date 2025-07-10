@@ -176,7 +176,6 @@ const camposBase = [
       { label: 'Kilo', value: 'kilo' },
     ]
   },
-  { key: 'composed_product', label: 'Producto compuesto', type: 'checkbox' },
 ]
 const camposEditables = computed(() => {
   const precioSalida =

@@ -26,7 +26,9 @@
           required
         />
       </label>
-
+      <p v-if="archivo" class="text-sm text-gray-700 mt-2 text-center">
+        Archivo seleccionado: <span class="font-medium">{{ archivo.name }}</span>
+      </p>
       <button
         type="submit"
         :disabled="subiendo || !archivo"
@@ -66,8 +68,9 @@ const exito = ref(false)
 
 const fileInput = ref(null)
 
-const onFileChange = () => {
-  archivo.value = fileInput.value.files[0] || null
+const onFileChange = (event) => {
+  const files = event.target.files
+  archivo.value = files && files.length > 0 ? files[0] : null
   mensaje.value = ''
 }
 
