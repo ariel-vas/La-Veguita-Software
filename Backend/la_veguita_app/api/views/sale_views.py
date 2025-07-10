@@ -10,18 +10,73 @@ from rest_framework.views import APIView
 from ..models import Sale, SaleDetail, Product, Batch, LastProcessedReceipt, Category, WrongSaleDetail
 from ..serializers import SaleSerializer
 
+"""
+    Lista todas las ventas existentes o crea una nueva venta.
 
+    Entradas (POST):
+        - Campos definidos en el SaleSerializer (incluyen detalles como fecha, cliente, etc.).
+
+    Salidas:
+        - (GET): Lista de ventas con los campos serializados.
+        - (POST): Objeto de la venta recién creada.
+"""
 class SaleListCreate(generics.ListCreateAPIView):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
 
+"""
+    Recupera, actualiza o elimina una venta específica según su ID.
 
+    Entradas:
+        - id_sale (int): ID de la venta (en la URL).
+        - Datos de la venta (solo para PUT/PATCH).
+
+    Salidas:
+        - (GET): Detalle de la venta con el ID especificado.
+        - (PUT/PATCH): Venta actualizada.
+        - (DELETE): Confirma eliminación exitosa.
+"""
 class SaleRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
     lookup_field = "id_sale"
 
+"""
+    Procesa archivos Journal sincronizados con Google Drive para registrar ventas y actualizar el stock automáticamente.
 
+    Entradas (POST):
+        - No se espera cuerpo de datos en la solicitud.
+        - La vista analiza archivos del directorio `JOURNAL_FOLDER_PATH`, que deben tener nombres como 'Journal_YYYY-MM-DD'.
+
+    Funcionalidad:
+        - Verifica archivos Journal nuevos o modificados desde la última ejecución.
+        - Extrae datos de recibos: número de boleta, fecha/hora, total y productos.
+        - Verifica si los productos existen:
+            - Si no existen, intenta determinar si es un error por confundir una categoría con un producto.
+            - Si el producto es válido, descuenta stock y registra detalles de venta.
+        - Agrupa ventas por archivo Journal, manteniendo trazabilidad.
+        - Actualiza en la base de datos la última fecha y número de boleta procesado.
+        - Si se detectan líneas mal interpretadas como productos, se registran en la tabla `WrongSaleDetail`.
+
+    Salidas (JSON):
+        - status (str): "success" o "error".
+        - processed_files (list[str]): Nombres de archivos Journal procesados.
+        - new_last_date (str): Última fecha procesada.
+        - new_last_num (int): Último número de boleta registrado.
+
+    Excepciones:
+        - En caso de errores de lectura de archivos, formato inválido, o problemas al acceder a productos/categorías, se registra el error en la respuesta o se imprime advertencia.
+
+    Métodos auxiliares:
+        - process_journal_file(filepath, last_num): Procesa un archivo y retorna el último número de boleta encontrado.
+        - extract_receipt_data(text): Extrae los datos de un recibo individual desde texto plano.
+        - process_receipt(receipt): Crea una venta (`Sale`) y sus detalles (`SaleDetail`), ajustando el stock.
+        - discount_stock(product, quantity): Descuenta la cantidad indicada del producto y sus lotes (`Batch`).
+        - register_wrong_sale_detail(sale_detail): Registra un producto mal identificado en `WrongSaleDetail`.
+
+    Dependencias:
+        - Configuración: `settings.JOURNAL_FOLDER_PATH` (debe apuntar a carpeta local sincronizada con Google Drive)
+"""
 class DailyStockUpdate(APIView):
     # Path to the folder synced with Google Drive
     FOLDER_PATH = settings.JOURNAL_FOLDER_PATH
