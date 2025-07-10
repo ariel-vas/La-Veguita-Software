@@ -108,7 +108,7 @@ class ProductsPDFProcessingView(APIView):
                 print(f"WARNING: Category with code {row[8]} does not exist, defaulting to blank category.")
             try:
                 supplier = Supplier.objects.get(rut=row[9])
-                validated_row["supplier"] = supplier.rut
+                validated_row["supplier"] = supplier.name
             except Supplier.DoesNotExist:
                 validated_row["supplier"] = ""
                 print(f"WARNING: Supplier with rut {row[9]} does not exist, defaulting to blank supplier.")
