@@ -7,7 +7,29 @@ from rest_framework import status
 from ..serializers import PDFUploadSerializer, ProductSerializer, CategorySerializer
 from ..models import Product, Category, Supplier
 
+"""
+    post:
+    Procesa un archivo PDF con una tabla de productos. Extrae filas válidas para crear o actualizar productos.
 
+    Cada fila debe tener 13 columnas específicas. Las filas inválidas serán ignoradas. Se identifican los productos por su `id_product`.
+
+    Entradas (multipart/form-data):
+        - file (File): Archivo PDF que contiene una o más tablas de productos.
+
+    Proceso:
+        - Crea productos si no existen.
+        - Actualiza productos si han cambiado.
+        - Ignora productos sin cambios.
+        - Registra errores de validación si los datos no son válidos.
+
+    Salida (JSON):
+        - message (str): Estado general del procesamiento.
+        - total_count (int): Total de filas procesadas.
+        - update_count (int): Productos actualizados.
+        - create_count (int): Productos creados.
+        - invalid_count (int): Filas inválidas.
+        - no_change_count (int): Productos que no necesitaban cambios.
+"""
 class ProductsPDFProcessingView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = PDFUploadSerializer(data=request.data)
@@ -151,6 +173,29 @@ class ProductsPDFProcessingView(APIView):
                 str(row["supplier"]) != str(supplier))
 
 
+"""
+    post:
+    Procesa un archivo PDF con una tabla de categorías. Extrae filas válidas para crear o actualizar categorías.
+
+    Cada fila debe tener exactamente 3 columnas: código, nombre, y posiblemente otra columna no usada. Solo se valida código y nombre.
+
+    Entradas (multipart/form-data):
+        - file (File): Archivo PDF que contiene una o más tablas de categorías.
+
+    Proceso:
+        - Crea categorías si no existen.
+        - Actualiza categorías si han cambiado.
+        - Ignora categorías sin cambios.
+        - Registra errores de validación si los datos no son válidos.
+
+    Salida (JSON):
+        - message (str): Estado general del procesamiento.
+        - total_count (int): Total de filas procesadas.
+        - update_count (int): Categorías actualizadas.
+        - create_count (int): Categorías creadas.
+        - invalid_count (int): Filas inválidas.
+        - no_change_count (int): Categorías que no necesitaban cambios.
+"""
 class CategoriesPDFProcessingView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = PDFUploadSerializer(data=request.data)
