@@ -1,13 +1,12 @@
 <template>
   <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 mt-0">
-    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a]">Ingreso Manual de Stock</h1>
-    <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#8bc34a] mb-6">Busca productos por ID y agrega stock</h2>
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] sm:mb-4 md:mb-6 lg:mb-10">Ingreso Manual de Stock</h1>
 
     <div class="flex flex-col items-center gap-4 mb-6 w-full max-w-sm">
       <input
         v-model="searchId"
         type="text"
-        placeholder="Buscar por ID de producto..."
+        placeholder="Buscar por ID de producto o nombre..."
         class="p-3 w-full text-lg border-2 border-[#8bc34a] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8bc34a]"
       />
       </div>

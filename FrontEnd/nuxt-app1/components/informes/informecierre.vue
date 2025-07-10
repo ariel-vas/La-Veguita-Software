@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col sm:flex-row sm:items-end gap-4 mb-6 w-full max-w-2xl">
+  <div class="flex flex-col gap-4 mb-6 w-full max-w-2xl">
     <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#8bc34a] mb-2">
       Informe de Cierre - Día Seleccionado
     </h1>

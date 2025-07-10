@@ -12,7 +12,7 @@
           v-for="noti in filtradasPorEstado(estado)"
           :key="noti.id_notification"
           :class="[
-            'p-4 rounded shadow border-l-4 relative',
+            'p-4 rounded shadow border-l-4 transition-colors duration-300 left-0',
             estado === 'pending' ? 'bg-gray-100 text-gray-700 border-gray-400' :
             estado === 'posponed' ? 'bg-orange-100 text-orange-700 border-orange-500' :
             'bg-green-100 text-green-700 border-green-500'

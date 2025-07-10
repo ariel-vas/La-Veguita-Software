@@ -39,9 +39,9 @@
               </div>
             </button>
 
-            <NuxtLink to="/agregarlote" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition" :class="activePage === 'agregarlote' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingreso x Lote</NuxtLink>
-            <NuxtLink to="/agregarstock" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition" :class="activePage === 'agregarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingreso Unitario</NuxtLink>
-            <NuxtLink to="/quitarstock" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition" :class="activePage === 'quitarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Salida Unitaria</NuxtLink>
+            <NuxtLink to="/agregarlote" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center" :class="activePage === 'agregarlote' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingreso x Lote</NuxtLink>
+            <NuxtLink to="/agregarstock" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center" :class="activePage === 'agregarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingreso Unitario</NuxtLink>
+            <NuxtLink to="/quitarstock" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center" :class="activePage === 'quitarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Salida Unitaria</NuxtLink>
             <div class="relative" @mouseleave="submenuOpen = false">
               <button
                 @click="submenuOpen = !submenuOpen"
@@ -74,10 +74,35 @@
                 <NuxtLink to="/crearproducto" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'crearproducto' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Crear Producto</NuxtLink>
                 <NuxtLink to="/importar-productos" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'importar-productos' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Importar Productos</NuxtLink>
                 <NuxtLink to="/importar-familias" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'importar-familias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Importar Familias</NuxtLink>
+                <NuxtLink to="/importar-proveedores" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'importar-proveedores' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Importar Proveedores</NuxtLink>
                 <NuxtLink to="/informes" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'informes' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Informes</NuxtLink>
               </div>
             </div>
-            <button @click="openLoginModal" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition" :class="isLoginModalOpen ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingresar</button>
+            <div v-if="user" class="flex items-center space-x-2 bg-[#689f38] px-3 py-2 rounded-md transition">
+              <span class="text-white">{{ user.username }}</span>
+              <button
+                @click="logout"
+                class="text-white hover:text-red-400 text-sm px-2 py-1 rounded transition"
+                title="Cerrar sesión"
+              >
+                <!-- Puedes usar texto simple -->
+                Logout
+                <!-- O un icono de salida, por ejemplo SVG -->
+                
+                <svg xmlns="http://www.w3.org/2000/svg" class="inline w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
+                </svg>
+              </button>
+            </div>
+            <div v-else>
+              <button
+                @click="openLoginModal"
+                class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition"
+                :class="isLoginModalOpen ? 'bg-[#689f38] font-bold' : ''"
+              >
+                Ingresar
+              </button>
+            </div>
           </div>
         </div>
         <!-- Botón campana + hamburguesa en móvil -->
@@ -119,7 +144,21 @@
     v-if="menuOpen"
     class="md:hidden fixed top-16 right-0 w-64 bg-[#8bc34a] text-white shadow-lg rounded-bl-lg rounded-br-lg z-50 flex flex-col p-4 space-y-2 max-h-[calc(100vh-64px)] overflow-y-auto"
   >
-    <template v-for="(item, index) in navItemsMobile">
+    <!-- Mostrar usuario + logout si hay usuario -->
+    <div v-if="user" class="flex items-center space-x-2 bg-[#689f38] px-3 py-2 rounded-md transition mb-4">
+      <span class="text-white">{{ user.username }}</span>
+      <button
+        @click="logout"
+        class="text-white hover:text-red-400 text-sm px-2 py-1 rounded transition"
+        title="Cerrar sesión"
+      >
+        Logout
+        <svg xmlns="http://www.w3.org/2000/svg" class="inline w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
+        </svg>
+      </button>
+    </div>
+    <template v-for="(item, index) in filteredNavItemsMobile ">
       <div
         v-if="!item.action"
         class="flex items-center space-x-2"
@@ -218,12 +257,50 @@
       <h2 class="text-xl font-bold mb-4">Iniciar Sesión</h2>
       <form @submit.prevent="handleLogin">
         <div class="mb-4">
-          <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
-          <input v-model="username" id="username" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]" required />
+          <label for="email" class="block text-sm font-medium text-gray-700">Email del usuario</label>
+          <input
+            v-model="email"
+            id="email"
+            type="text"
+            placeholder="ejemplo@correo.com"
+            @blur="emailTouched = true"
+            class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]"
+            :class="{'border-red-500': emailTouched && !correoValido}"
+            required
+          />
+          <p v-if="emailTouched && !correoValido && email" class="text-red-600 text-sm mt-1">
+            Por favor, ingresa un correo válido.
+          </p>
         </div>
-        <div class="mb-6">
+        <div class="mb-6 relative">
           <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-          <input v-model="password" id="password" type="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]" required />
+          <input
+            v-model="password"
+            :type="showPassword ? 'text' : 'password'"
+            id="password"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#8bc34a] focus:border-[#8bc34a]"
+            required
+          />
+          <button
+            type="button"
+            @click="toggleShowPassword"
+            class="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none"
+            tabindex="-1"
+            aria-label="Mostrar u ocultar contraseña"
+          >
+            <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.958 9.958 0 012.94-4.46M9.88 9.88a3 3 0 014.24 4.24M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3l18 18" />
+            </svg>
+          </button>
         </div>
         <div class="flex justify-between items-center">
           <button type="submit" class="bg-[#ff9800] text-white px-4 py-2 rounded-md">Ingresar</button>
@@ -244,13 +321,33 @@ const activePage = ref('')
 const isLoginModalOpen = ref(false)
 const showAlertModal = ref(false)
 const menuOpen = ref(false)
-const username = ref('')
+const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const notificaciones = ref([]) // Este ref ahora almacenará solo las notificaciones pendientes y ordenadas
 const mostrarAviso = ref(false)
 const mensajeAviso = ref('')
 const submenuOpen = ref(false)
 const ocultarNotificaciones = ref(new Set()) // Para la funcionalidad de posponer
+
+const user = ref(null)
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/whoami/', {
+      credentials: 'include',
+    })
+    if (response.ok) {
+      const data = await response.json()
+      user.value = data
+    }
+  } catch (error) {
+    console.error('Error obteniendo usuario:', error)
+  }
+})
+
 watchEffect(() => {
   const path = route.path || ''
 
@@ -268,6 +365,8 @@ watchEffect(() => {
     activePage.value = 'importar-productos'
   } else if (path.startsWith('/importar-familias')) {
     activePage.value = 'importar-familias'
+  } else if (path.startsWith('/importar-proveedores')) {
+    activePage.value = 'importar-proveedores'
   } else if (path.startsWith('/notificaciones')) {
     activePage.value = 'notificaciones'
   } else if (path.startsWith('/informes')) {
@@ -297,11 +396,82 @@ const openLoginModal = () => {
 const closeLoginModal = () => {
   isLoginModalOpen.value = false
 }
-const handleLogin = () => {
-  console.log('Usuario:', username.value)
-  console.log('Contraseña:', password.value)
-  closeLoginModal()
+const config = useRuntimeConfig()
+
+const correoValido = computed(() => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return regex.test(email.value)
+})
+
+const handleLogin = async () => {
+  if (!correoValido.value) {
+    alert('Por favor ingresa un correo válido')
+    return
+  }
+  try {
+    const response = await fetch(`${config.public.apiBase}/api/login/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include', // necesario para sesiones
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    })
+
+    const data = await response.json()
+
+    if (response.ok && data.success) {
+      // obtener datos reales del usuario desde /whoami
+      const whoamiRes = await fetch(`${config.public.apiBase}/api/whoami/`, {
+        credentials: 'include'
+      })
+      if (whoamiRes.ok) {
+        const userData = await whoamiRes.json()
+        user.value = userData
+        closeLoginModal()
+      } else {
+        console.warn('No se pudo obtener datos del usuario')
+      }
+    } else {
+      alert(data.message || 'Error en el login')
+    }
+  } catch (err) {
+    console.error('Error al hacer login:', err)
+    alert('Error de red o servidor')
+  }
 }
+
+const logout = async () => {
+  try {
+    await fetch(`${config.public.apiBase}/api/logout/`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+    user.value = null
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error)
+  }
+}
+
+watch(user, (val) => {
+  if (val) {
+    localStorage.setItem('user', JSON.stringify(val))
+  } else {
+    localStorage.removeItem('user')
+  }
+})
+
+onMounted(() => {
+  const stored = localStorage.getItem('user')
+  if (stored) {
+    user.value = JSON.parse(stored)
+  }
+})
+
+
 const togglePasswordRecovery = () => {
   console.log('Recuperación de Contraseña')
 }
@@ -370,6 +540,9 @@ const esconderNotificacion = async (id_notification) => {
   }
 }
 const navItemsMobile = [ // Para la vista móvil, se mantienen individuales
+  { label: 'Ingreso x Lote', link: '/agregarlote' },
+  { label: 'Ingreso Unitario', link: '/agregarstock' },
+  { label: 'Salida Unitaria', link: '/quitarstock' },
   { label: 'Productos', link: '/productos' },
   { label: 'Categorias', link: '/categorias' },
   { label: 'Sub-Categorias', link: '/subcategorias' },
@@ -378,9 +551,18 @@ const navItemsMobile = [ // Para la vista móvil, se mantienen individuales
   { label: 'Notificaciones', link: '/notificaciones' },
   { label: 'Importar Productos', link: '/importar-productos' },
   { label: 'Importar Familias', link: '/importar-familias' },
+  { label: 'Importar Proveedores', link: '/importar-proveedores' },
+  { label: 'Organización de Productos', link: 'javascript:void(0)' }, // Este es un botón que abre el submenú
   { label: 'Crear Producto', link: '/crearproducto' },
   { label: 'Ingresar', link: 'javascript:void(0)', action: openLoginModal }
 ];
+const filteredNavItemsMobile = computed(() => {
+  if (user.value) {
+    // Si hay usuario, quitar el item "Ingresar"
+    return navItemsMobile.filter(item => item.label !== 'Ingresar')
+  }
+  return navItemsMobile
+})
 
 const cargarNotificaciones = async () => {
   try {
@@ -447,6 +629,7 @@ const allPagesLabels = {
   notificaciones: { label: 'Notificaciones', link: '/notificaciones' },
   'importar-productos': { label: 'Importar Productos', link: '/importar-productos' },
   'importar-familias': { label: 'Importar Familias', link: '/importar-familias' },
+  'importar-proveedores': { label: 'Importar Proveedores', link: '/importar-proveedores' },
   crearproducto: { label: 'Crear Producto', link: '/crearproducto' }
 };
 const mobileActiveSection = computed(() => {

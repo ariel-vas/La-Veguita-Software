@@ -12,12 +12,77 @@ from ..serializers import SaleDetailSerializer
 from django.utils.dateparse import parse_date
 import calendar
 
+"""
+    Vista API para listar y crear detalles de ventas.
 
+    Métodos soportados:
+    - GET: Lista todos los detalles de ventas registrados.
+    - POST: Permite registrar un nuevo detalle de venta.
+
+    Entradas (GET):
+    - No requiere entradas.
+
+    Salidas (GET):
+    - "sale": "entero (ID de la venta)"
+    - "product": "cadena (ID del producto)"
+    - "quantity": "decimal (cantidad vendida)"
+    - "unit": "cadena (unidad: 'unit' o 'kilo')"
+    - "unit_price": "decimal (precio por unidad)"
+    - "subtotal": "decimal (valor total de la línea)"
+
+    Entradas (POST):
+    - "sale": "entero (ID de la venta)"
+    - "product": "cadena (ID del producto)"
+    - "quantity": "decimal"
+    - "unit": "cadena ('unit' o 'kilo')"
+    - "unit_price": "decimal"
+
+    Salidas (POST):
+    - "sale": "entero"
+    - "product": "cadena"
+    - "quantity": "decimal"
+    - "unit": "cadena"
+    - "unit_price": "decimal"
+    - "subtotal": "decimal"
+    """
 class SaleDetailListCreate(generics.ListCreateAPIView):
     queryset = SaleDetail.objects.all()
     serializer_class = SaleDetailSerializer
 
 
+"""
+    Vista API para recuperar, actualizar o eliminar un detalle de venta específico según venta y producto.
+
+    Métodos soportados:
+    - GET: Obtiene el detalle de venta asociado a un producto en una venta.
+    - PUT/PATCH: Actualiza el detalle.
+    - DELETE: Elimina el detalle de la venta.
+
+    Entradas (GET):
+    - "sale_id": "entero (ID de la venta, en la URL)"
+    - "product_id": "cadena (ID del producto, en la URL)"
+
+    Salidas (GET):
+    - "sale": "entero"
+    - "product": "cadena"
+    - "quantity": "decimal"
+    - "unit": "cadena"
+    - "unit_price": "decimal"
+    - "subtotal": "decimal"
+
+    Entradas (PUT/PATCH):
+    - Cualquier campo modificable: "quantity", "unit", "unit_price"
+
+    Salidas (PUT/PATCH):
+    - Registro actualizado (mismos campos)
+
+    Entradas (DELETE):
+    - "sale_id": "entero"
+    - "product_id": "cadena"
+
+    Salidas (DELETE):
+    - Sin contenido (204 No Content)
+    """
 class SaleDetailRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = SaleDetail.objects.all()
     serializer_class = SaleDetailSerializer
@@ -26,7 +91,23 @@ class SaleDetailRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         sale_id = self.kwargs['sale_id']
         product_id = self.kwargs['product_id']
         return SaleDetail.objects.get(sale__id_sale=sale_id, product__id_product=product_id)
-    
+
+
+"""
+    Vista API para obtener la cantidad total vendida de un producto en un mes y año específicos.
+
+    Método soportado:
+    - GET: Devuelve la cantidad total vendida de un producto en un mes.
+
+    Entradas (GET):
+    - "id_product": "cadena (ID del producto, en la URL)"
+
+     Salidas (GET):
+    - "product_id": "cadena"
+    - "year": "entero"
+    - "month": "entero"
+    - "quantity_sold": "decimal (cantidad total vendida)"
+    """
 class MonthlyProductSalesView(APIView):
     def get(self, request, id_product):
         today = now()
@@ -59,7 +140,23 @@ class MonthlyProductSalesView(APIView):
             "quantity_sold": float(total_quantity)
         }, status=status.HTTP_200_OK)
 
+"""
+    Vista API para obtener el top 10 de productos con mayor ingreso (revenue), con opción de filtrar por mes y año.
 
+    Método soportado:
+    - GET: Devuelve los 10 productos con mayor subtotal acumulado (ingresos) según las ventas.
+
+    Entradas (GET):
+    - "month": "entero (opcional, por query param: 1-12)"
+    - "year": "entero (opcional, por query param)"
+
+    Salidas (GET):
+    - "filter": "diccionario con los filtros aplicados"
+    - "top_10_products": "lista de diccionarios con los siguientes campos:"
+        - "product__id_product": "cadena (ID del producto)"
+        - "product__description": "cadena (nombre o descripción del producto)"
+        - "total_revenue": "decimal (ingreso total generado por el producto)"
+"""
 class Top10ProductsRevenue(APIView):
     def get(self, request):
         # Parámetros opcionales
@@ -94,7 +191,24 @@ class Top10ProductsRevenue(APIView):
             },
             "top_10_products": product_sales
         }, status=status.HTTP_200_OK)
-    
+
+"""
+    Vista API para obtener los 10 productos con menor ingreso (revenue), con opción de filtrar por mes y año.
+
+    Método soportado:
+    - GET: Devuelve los 10 productos con menor subtotal acumulado (ingresos) según las ventas.
+
+    Entradas (GET):
+    - "month": "entero (opcional, por query param: 1-12)"
+    - "year": "entero (opcional, por query param)"
+
+    Salidas (GET):
+    - "filter": "diccionario con los filtros aplicados"
+    - "bottom_10_products_by_revenue": "lista de diccionarios con los siguientes campos:"
+        - "product__id_product": "cadena (ID del producto)"
+        - "product__description": "cadena (nombre o descripción del producto)"
+        - "total_revenue": "decimal (ingreso total generado por el producto)"
+"""    
 class Bottom10ProductsByRevenueView(APIView):
     def get(self, request):
         # Parámetros opcionales
@@ -129,7 +243,26 @@ class Bottom10ProductsByRevenueView(APIView):
             },
             "bottom_10_products_by_revenue": product_sales
         }, status=status.HTTP_200_OK)
-    
+
+
+"""
+    Vista API para obtener el reporte de ventas diario agrupado por producto.
+
+    Método soportado:
+    - GET: Devuelve las cantidades vendidas y los subtotales totales de cada producto en una fecha específica.
+
+    Entradas (GET):
+    - "date": "cadena (obligatorio, formato 'YYYY-MM-DD')"
+
+    Salidas (GET):
+    - "report_date": "objeto tipo fecha (fecha consultada)"
+    - "products_sold": "lista de productos vendidos con los siguientes campos:"
+        - "product__id_product": "cadena (ID del producto)"
+        - "product__description": "cadena (descripción del producto)"
+        - "product__exit_stock_unit": "cadena ('unit' o 'kilo')"
+        - "total_quantity": "decimal (cantidad total vendida del producto ese día)"
+        - "total_subtotal": "decimal (subtotal total generado por el producto ese día)"
+"""
 class DailySalesReportView(APIView):
     def get(self, request):
         # Leer parámetro obligatorio: ?date=YYYY-MM-DD
@@ -160,6 +293,32 @@ class DailySalesReportView(APIView):
             "products_sold": report
         }, status=status.HTTP_200_OK)
 
+
+"""
+    Vista API para obtener ingresos, costos, cantidades ingresadas y utilidades mensuales de un producto durante los últimos 12 meses.
+
+    Método soportado:
+    - GET: Devuelve un reporte mensual con ingreso por ventas, cantidad ingresada al inventario, costo estimado y utilidad bruta.
+
+    Entradas (GET):
+    - "product_description": "cadena (obligatorio, nombre exacto del producto)"
+    - "year": "entero (obligatorio, año de corte del último mes)"
+    - "month": "entero (obligatorio, mes de corte del último mes, entre 1 y 12)"
+
+    Salidas (GET):
+    - "product_id": "cadena (ID del producto)"
+    - "product_description": "cadena (nombre del producto)"
+    - "fecha_inicio": "cadena (formato 'YYYY-MM', 12 meses antes del mes seleccionado)"
+    - "fecha_fin": "cadena (formato 'YYYY-MM', mes seleccionado)"
+    - "monthly_report": "lista de objetos por mes, cada uno con:"
+        - "año": "entero (año)"
+        - "mes_num": "entero (número del mes: 1-12)"
+        - "mes_nombre": "cadena (nombre del mes en inglés)"
+        - "ingreso": "decimal (subtotal total vendido ese mes)"
+        - "cantidad_ingresada": "decimal (cantidad total ingresada a bodega ese mes)"
+        - "costo": "decimal (costo estimado del stock ingresado ese mes)"
+        - "utilidad": "decimal (ingreso - costo para ese mes)"
+"""
 class MonthlyRevenueVsCostByProductView(APIView):
     def get(self, request):
         product_description = request.query_params.get('product_description')
@@ -282,6 +441,31 @@ class MonthlyRevenueVsCostByProductView(APIView):
             "monthly_report": resultados
         }, status=status.HTTP_200_OK)
 
+
+"""
+    Vista API para obtener ingresos, costos, cantidades ingresadas y utilidades mensuales de una categoría durante los últimos 12 meses.
+
+    Método soportado:
+    - GET: Devuelve un reporte mensual con ingreso por ventas, cantidad ingresada al inventario, costo estimado y utilidad bruta para todos los productos de una categoría.
+
+    Entradas (GET):
+    - "category": "cadena (obligatorio, nombre exacto de la categoría)"
+    - "year": "entero (obligatorio, año de corte del último mes)"
+    - "month": "entero (obligatorio, mes de corte del último mes, entre 1 y 12)"
+
+    Salidas (GET):
+    - "category": "cadena (nombre de la categoría consultada)"
+    - "fecha_inicio": "cadena (formato 'YYYY-MM', 12 meses antes del mes seleccionado)"
+    - "fecha_fin": "cadena (formato 'YYYY-MM', mes seleccionado)"
+    - "monthly_report": "lista de objetos por mes, cada uno con:"
+        - "año": "entero (año)"
+        - "mes_num": "entero (número del mes: 1-12)"
+        - "mes_nombre": "cadena (nombre del mes en inglés)"
+        - "ingreso": "decimal (subtotal total vendido ese mes)"
+        - "cantidad_ingresada": "decimal (cantidad total ingresada a bodega ese mes para los productos de la categoría)"
+        - "costo": "decimal (costo estimado del stock ingresado ese mes)"
+        - "utilidad": "decimal (ingreso - costo para ese mes)"
+"""
 class MonthlyRevenueVsCostByCategoryView(APIView):
     def get(self, request):
         category_name = request.query_params.get('category')
@@ -419,7 +603,25 @@ class MonthlyRevenueVsCostByCategoryView(APIView):
             "monthly_report": resultados
         }, status=status.HTTP_200_OK)
     
-    
+
+"""
+    Vista API para obtener la ganancia bruta mensual general (todas las categorías) de un año específico.
+
+    Método soportado:
+    - GET: Devuelve ingreso total, costo total y ganancia bruta mensual para cada mes del año especificado.
+
+    Entradas (GET):
+    - "year": "entero (obligatorio, año a consultar)"
+
+    Salidas (GET):
+    - "year": "entero (año consultado)"
+    - "monthly_gross_profit": "lista de objetos por mes, cada uno con:"
+        - "mes_num": "entero (número del mes: 1-12)"
+        - "mes_nombre": "cadena (nombre del mes en inglés)"
+        - "ingreso_total": "decimal (subtotal total de ventas en el mes)"
+        - "costo_total": "decimal (costo estimado del inventario ingresado ese mes)"
+        - "ganancia_bruta": "decimal (ingreso_total - costo_total)"
+"""    
 class MonthlyGrossProfitView(APIView):
     def get(self, request):
         year = request.query_params.get('year')
@@ -483,7 +685,27 @@ class MonthlyGrossProfitView(APIView):
             "year": year,
             "monthly_gross_profit": resultado
         }, status=status.HTTP_200_OK)
-    
+
+
+"""
+    Obtiene los 10 productos más rentables de un mes específico.
+
+    Entradas:
+        - month (int): Mes del año (1-12). Requerido como parámetro de consulta (?month=).
+        - year (int): Año correspondiente. Requerido como parámetro de consulta (?year=).
+
+    Salidas:
+        - filter (dict):
+            - month (int): Número del mes consultado.
+            - month_name (str): Nombre del mes consultado.
+            - year (int): Año consultado.
+        - top_10_most_profitable_products (list[dict]):
+            - product_id (int): ID del producto.
+            - product_description (str): Descripción del producto.
+            - ingreso_total (float): Ingresos por ventas del producto en el mes/año especificado.
+            - costo_total (float): Costos asociados al producto en el mismo período.
+            - rentabilidad (float): Diferencia entre ingresos y costos.
+"""
 class Top10MostProfitableProductsView(APIView):
     def get(self, request):
         month = request.query_params.get('month')
@@ -578,7 +800,33 @@ class Top10MostProfitableProductsView(APIView):
             },
             "top_10_most_profitable_products": top_10_rentables
         }, status=status.HTTP_200_OK)
-    
+
+
+"""
+    Devuelve el flujo mensual de inventario (ventas y reabastecimiento) de un producto en los últimos 12 meses.
+
+    Entradas:
+        - product_id (int): ID del producto (en la URL como parámetro de ruta).
+
+    Salidas:
+        - product_id (int): ID del producto.
+        - product_description (str): Descripción del producto.
+        - current_stock (float): Stock actual del producto.
+        - period (dict):
+            - from (str): Mes y año de inicio del período analizado.
+            - to (str): Mes y año de fin del período analizado.
+        - inventory_flow (list[dict]):
+            - mes_num (int): Número del mes.
+            - mes_nombre (str): Nombre del mes.
+            - año (int): Año correspondiente.
+            - cantidad_vendida (float): Total vendido en ese mes.
+            - cantidad_ingresada (float): Total ingresado (reabastecimiento) en ese mes.
+            - flujo_neto (float): Diferencia entre ingreso y venta (positivo = aumento de inventario).
+        - summary (dict):
+            - total_sold_12_months (float): Total vendido en los últimos 12 meses.
+            - total_restocked_12_months (float): Total reabastecido en los últimos 12 meses.
+            - net_flow_12_months (float): Diferencia total entre ingresos y ventas en el período.
+"""
 class ProductInventoryFlowView(APIView):
     def get(self, request, product_id):
         if not product_id:
@@ -689,7 +937,39 @@ class ProductInventoryFlowView(APIView):
                 "net_flow_12_months": round(sum(item['flujo_neto'] for item in monthly_flow), 4)
             }
         }, status=status.HTTP_200_OK)
-    
+
+
+"""
+    Obtiene la varianza porcentual de ventas de un producto entre el mes seleccionado y los dos meses anteriores.
+
+    Entradas:
+        - product_id (str): ID del producto (parámetro de consulta obligatorio).
+        - month (int, opcional): Mes seleccionado (1-12). Si no se provee, se usa el mes actual.
+        - year (int, opcional): Año del mes seleccionado. Si no se provee, se usa el año actual.
+
+    Salidas:
+        - product_id (str): ID del producto consultado.
+        - product_description (str): Descripción del producto.
+        - analysis_date (str): Fecha del análisis (YYYY-MM-DD).
+        - mes_seleccionado (dict):
+            - mes (str): Nombre y año del mes seleccionado.
+            - mes_num (int): Número del mes seleccionado.
+            - año (int): Año del mes seleccionado.
+            - cantidad_vendida (float): Cantidad vendida en el mes seleccionado.
+            - automatico (bool): True si se usó mes/año actual por defecto, False si se proporcionó.
+        - mes_anterior (dict):
+            - mes (str): Nombre y año del mes anterior.
+            - mes_num (int): Número del mes anterior.
+            - año (int): Año del mes anterior.
+            - cantidad_vendida (float): Cantidad vendida en el mes anterior.
+            - varianza_porcentual (float): Varianza porcentual respecto al mes seleccionado.
+        - mes_anterior_2 (dict):
+            - mes (str): Nombre y año del mes dos meses antes.
+            - mes_num (int): Número del mes dos meses antes.
+            - año (int): Año del mes dos meses antes.
+            - cantidad_vendida (float): Cantidad vendida en ese mes.
+            - varianza_porcentual (float): Varianza porcentual respecto al mes seleccionado.
+"""
 class ProductSalesVarianceView(APIView):
     def get(self, request):
         product_id = request.query_params.get('product_id')

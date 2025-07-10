@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views.user_views import login_view, logout_view, whoami_view
 
 urlpatterns = [
     path("users/", views.UserListCreate.as_view(), name="user-create-list"),
@@ -40,4 +41,7 @@ urlpatterns = [
     path('categories-pdf/', views.CategoriesPDFProcessingView.as_view(), name='categories-pdf'),
     path('suppliers-pdf/', views.SuppliersPDFProcessingView.as_view(), name='suppliers-pdf'),
     path('daily-stock-update/', views.DailyStockUpdate.as_view(), name='daily-stock-update'),
+    path("login/", login_view, name="login"),
+    path("logout/", logout_view, name="logout"),
+    path("whoami/", whoami_view, name="whoami"),
 ]
