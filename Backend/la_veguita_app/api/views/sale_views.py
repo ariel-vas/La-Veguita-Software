@@ -250,6 +250,7 @@ class DailyStockUpdate(APIView):
                         continue
                 except Category.DoesNotExist:
                     if invalid:
+                        self.register_wrong_sale_detail(sale_detail)  # Register products that have not been sincronized
                         continue
 
             if product:

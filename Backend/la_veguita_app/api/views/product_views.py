@@ -1,5 +1,7 @@
 from django.shortcuts import render
+from rest_framework import status
 from rest_framework import generics
+from rest_framework.response import Response
 from ..models import Product
 from ..serializers import ProductSerializer
 
@@ -64,9 +66,10 @@ class ProductCreateView(generics.CreateAPIView):
     - "active": "booleano"
 """
 class ProductListView(generics.ListAPIView):
-    queryset = Product.objects.prefetch_related('subcategories')
     serializer_class = ProductSerializer
 
+    def get_queryset(self):
+        return Product.objects.filter(active=True)
 
 """
     Vista API para obtener, actualizar o eliminar un producto específico.
@@ -94,10 +97,18 @@ class ProductListView(generics.ListAPIView):
     Salidas (DELETE):
     - Sin contenido (204 No Content)
 """
-class ProductRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):  # TODO: DO SOFT DELETE
-    queryset = Product.objects.all()
+class ProductRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductSerializer
     lookup_field = "id_product"
+
+    def get_queryset(self):
+        return Product.objects.filter(active=True)
+
+    def destroy(self, request, *args, **kwargs):
+        product = self.get_object()
+        product.active = False
+        product.save()
+        return Response({"message": "Producto eliminado exitosamente."}, status=status.HTTP_200_OK)
 
 """
     Vista API para listar productos filtrados por nombre exacto de categoría.
@@ -116,7 +127,8 @@ class ProductByCategoryView(generics.ListAPIView):
 
     def get_queryset(self):
         category_name = self.kwargs['category']
-        return Product.objects.filter(category__name__iexact=category_name)
+
+        return Product.objects.filter(category__name__iexact=category_name, active=True)
 
 
 """
@@ -131,9 +143,11 @@ class ProductByCategoryView(generics.ListAPIView):
     Salidas (GET):
     - Lista de productos asociados a la subcategoría (ver ProductListView)
 """
+
 class ProductBySubCategoryView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
         subcategory_name = self.kwargs['subcategory']
-        return Product.objects.filter(subcategories__name__iexact=subcategory_name).distinct()
+        return Product.objects.filter(subcategories__name__iexact=subcategory_name, active=True).distinct()
+      
