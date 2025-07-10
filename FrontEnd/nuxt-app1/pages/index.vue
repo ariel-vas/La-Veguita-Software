@@ -65,20 +65,28 @@
     }
   }
   const cargarStock = async () => {
-    cargando.value = true
+  cargando.value = true
 
-    try {
-      await fetch(`${config.public.apiBase}/api/daily-stock-update/`, { method: 'POST' })
-      await new Promise(resolve => setTimeout(resolve, 20000))
-      router.push('/')
-      alert('Se cargó el archivo correctamente.')
-    } catch (error) {
-      console.error('Error cargando stock:', error)
-      alert('Hubo un error al cargar el archivo.')
-    } finally {
-      cargando.value = false
+  try {
+    const response = await fetch(`${config.public.apiBase}/api/daily-stock-update/`, { method: 'POST' })
+    
+    if (!response.ok) {
+      // Aquí puedes leer mensaje de error si viene en el body
+      const errorData = await response.json().catch(() => null)
+      throw new Error(errorData?.message || `Error ${response.status}`)
     }
+    
+    await new Promise(resolve => setTimeout(resolve, 20000))
+    router.push('/')
+    alert('Se cargó el archivo correctamente.')
+  } catch (error) {
+    console.error('Error cargando stock:', error)
+    alert('Hubo un error al cargar el archivo: ' + error.message)
+  } finally {
+    cargando.value = false
   }
+}
+
   onMounted(() => {
     cargarNotificaciones()
   })

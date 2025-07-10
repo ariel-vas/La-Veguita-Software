@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col items-center justify-center gap-6 bg-[#f5f5f5] p-4 sm:p-4 md:p-6 lg:p-8 mt-0">
-    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-5 sm:mb-4 md:mb-6 lg:mb-10">Importar listado de familias desde Zpos</h1>
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#8bc34a] mb-5 sm:mb-4 md:mb-6 lg:mb-10">Importar listado de proveedores desde Zpos</h1>
 
     <form @submit.prevent="handleUpload" class="space-y-4">
       <label
@@ -87,7 +87,7 @@ const handleUpload = async () => {
     formData.append('file', archivo.value)
 
     const config = useRuntimeConfig()
-    const response = await fetch(`${config.public.apiBase}/api/categories-pdf/`, {
+    const response = await fetch(`${config.public.apiBase}/api/suppliers-pdf/`, {
       method: 'POST',
       body: formData
     })
@@ -97,7 +97,7 @@ const handleUpload = async () => {
       throw new Error(errorText || 'Error en el servidor')
     }
 
-    mensaje.value = 'Archivo de familias importado correctamente.'
+    mensaje.value = 'Archivo de proveedores importado correctamente.'
     exito.value = true
     archivo.value = null
     if (fileInput.value) {
