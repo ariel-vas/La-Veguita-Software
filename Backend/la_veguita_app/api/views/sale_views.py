@@ -103,6 +103,9 @@ class DailyStockUpdate(APIView):
                         full_path = os.path.join(self.FOLDER_PATH, filename)
                         new_files.append((file_date, full_path))
 
+            # Sort by date
+            new_files.sort()
+
             new_last_num = last_num
             new_last_date = last_date
 
