@@ -14,6 +14,7 @@
     <table class=" bg-white rounded-xl shadow overflow-hid_categoryden">
       <thead class="bg-[#8bc34a] text-white">
         <tr>
+          <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Código</th>
           <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Nombre</th>
           <th class="text-left py-3 px-2 sm:px-4 md:px-6 lg:px-8">Acciones</th>
         </tr>
@@ -23,7 +24,8 @@
           v-for="cat in displayedCategories"
           :key="cat.id_category"
           class="border-b hover:bg-[#f0f8e9]"
-        >
+        > 
+          <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ cat.id }}</td>
           <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">{{ cat.name }}</td>
           <td class="py-3 px-2 sm:px-4 md:px-6 lg:px-8">
             <button
