@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-!dsl7e%@jv=m22gjcc11&vqdv7js)drma&k#w@c^fb4hz^t6@_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -79,7 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'la_veguita_app.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -91,6 +90,13 @@ DATABASES = {
         'PASSWORD': os.getenv("DB_PASSWORD", "postgres"),
         'HOST': os.getenv("DB_HOST", "db"),
         'PORT': os.getenv("DB_PORT", "5432"),
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
     }
 }
 

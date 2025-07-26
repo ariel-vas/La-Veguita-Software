@@ -8,3 +8,4 @@ from .sale_detail_serializer import SaleDetailSerializer
 from .supplier_serializer import SupplierSerializer
 from .notification_serializer import NotificationSerializer
 from .file_processing_serializer import PDFUploadSerializer
+from .wrong_sale_detail_serializer import WrongSaleDetailSerializer

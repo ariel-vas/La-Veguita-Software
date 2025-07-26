@@ -2,7 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 
-class WrongSaleDetail(models.Model):    # TODO: FINISH SERIALIZER AND VIEWS
+class WrongSaleDetail(models.Model):
 
     id_wrong_sale_detail = models.AutoField(primary_key=True)
     barcode = models.CharField(max_length=50)

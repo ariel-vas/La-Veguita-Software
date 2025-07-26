@@ -1,0 +1,4 @@
+0.- Check route to rclone with "which rclone", should be /usr/bin/rclone, if not replace in command
+1.- Open crone tab with "crontab -e"
+2.- paste "0 * * * * /usr/bin/rclone copy "gdrive:Journal" /home/azureuser/srv/journals --max-age 7d --include "Journal*" --update"
+3.- Exit
