@@ -77,13 +77,13 @@
           <option value="kilo">Kilo</option>
         </select>
 
-        <!-- Checkbox para producto compuesto -->
+        <!-- Checkbox para producto compuesto 
         <input
           v-else-if="campo.key === 'composed_product'"
           v-model="editado.composed_product"
           type="checkbox"
           class="w-5 h-5 sm:col-span-2"
-        />
+        /> -->
         <!-- <input
           v-else-if="campo.key === 'checked'"
           v-model="editado.checked"
@@ -151,15 +151,6 @@ const camposBase = [
   { key: 'stock', label: '*Stock Disponible', type: 'number' },
   { key: 'critical_stock', label: '*Stock Crítico', type: 'number' },
   {
-    key: 'entry_stock_unit',
-    label: '*Unidad Entrada Stock',
-    type: 'select',
-    options: [
-      { label: 'Unidad', value: 'unit' },
-      { label: 'Kilo', value: 'kilo' },
-    ]
-  },
-  {
     key: 'exit_stock_unit',
     label: '*Unidad Salida Stock',
     type: 'select',
@@ -168,7 +159,6 @@ const camposBase = [
       { label: 'Kilo', value: 'kilo' },
     ]
   },
-  { key: 'composed_product', label: 'Producto Compuesto', type: 'checkbox' },
 ]
 
 const editado = ref({

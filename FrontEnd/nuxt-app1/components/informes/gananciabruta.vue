@@ -118,6 +118,9 @@ async function fetchGrossProfitData() {
     totalCosto.value = costos.reduce((sum, val) => sum + val, 0)
     totalGanancia.value = totalIngreso.value - totalCosto.value
 
+    const maxValor = Math.max(...ingresos, ...costos)
+    const margenExtra = maxValor * 0.1
+
     chartData.value = {
       labels,
       datasets: [
@@ -133,6 +136,8 @@ async function fetchGrossProfitData() {
         },
       ],
     }
+
+    chartOptions.scales.y.suggestedMax = maxValor + margenExtra
   } catch (err) {
     console.error('Error al obtener los datos:', err)
     totalIngreso.value = null

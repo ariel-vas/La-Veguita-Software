@@ -7,6 +7,17 @@
       class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-xl space-y-6"
     >
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
+        <label for="id" class="font-semibold">Código:</label>
+        <input
+          id="id"
+          type="number"
+          v-model="categoria.id"
+          required
+          class="border border-gray-300 rounded px-1 sm:px-2 md:px-3 lg:px-4 py-1 w-full sm:col-span-2"
+          placeholder="Ingrese el código de la categoría"
+          pattern="^\d+$"
+          title="El código solo permite números."
+        />
         <label for="name" class="font-semibold">Nombre:</label>
         <input
           id="name"
