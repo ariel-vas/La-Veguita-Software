@@ -1,100 +1,23 @@
 <template>
   <div>
-  <nav class="bg-[#8bc34a] text-white w-full sticky top-0 shadow">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16 items-center">
-        <NuxtLink
-          to="/"
-          class="flex items-center shrink-0 px-2 py-0 rounded-xl transition-all duration-200"
-        >
-          <img
-            src="/laveguitalogo-removebg-preview.png"
-            alt="Icono LVG"
-            class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain mr-2"
-          />
-          <span class="text-lg sm:text-xl font-bold truncate text-white">La Veguita</span>
-        </NuxtLink>
+    <nav class="bg-[#8bc34a] text-white w-full sticky top-0 shadow">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <NuxtLink
+            to="/"
+            class="flex items-center shrink-0 px-2 py-0 rounded-xl transition-all duration-200"
+          >
+            <img
+              src="/laveguitalogo-removebg-preview.png"
+              alt="Icono LVG"
+              class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain mr-2"
+            />
+            <span class="text-lg sm:text-xl font-bold truncate text-white">La Veguita</span>
+          </NuxtLink>
 
-          
-        <div class="hidden md:flex space-x-4 flex-grow justify-end min-w-0">
-          <div class="flex items-center space-x-2">
-            <button
-              @click="openAlertModal"
-              class="relative group"
-              title="Productos por vencer"
-            >
-              <div class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
-                   :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
-                     class="w-6 h-6 transition"
-                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"/>
-                </svg>
-                <span v-if="notificaciones.length > 0"
-                      class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md">
-                  {{ notificaciones.length }}
-                </span>
-              </div>
-            </button>
-
-            <NuxtLink to="/agregarlote" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center" :class="activePage === 'agregarlote' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingreso x Lote</NuxtLink>
-            <NuxtLink to="/agregarstock" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center" :class="activePage === 'agregarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Ingreso Unitario</NuxtLink>
-            <NuxtLink to="/quitarstock" class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center" :class="activePage === 'quitarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Salida Unitaria</NuxtLink>
-            <div class="relative" @mouseleave="submenuOpen = false">
-              <button
-                @click="submenuOpen = !submenuOpen"
-                class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition flex items-center space-x-1"
-              >
-                <span>Organización de Productos</span>
-                <svg
-                  :class="{ 'rotate-180': submenuOpen }"
-                  class="w-4 h-4 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              <div
-                v-show="submenuOpen"
-                class="absolute left-0 top-full w-59 bg-white text-black rounded-md shadow-lg z-50"
-                @mouseenter="submenuOpen = true"
-                @mouseleave="submenuOpen = false"
-              >
-                <NuxtLink to="/productos" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'productos' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Productos</NuxtLink>
-                <NuxtLink to="/categorias" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'categorias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Categorías</NuxtLink>
-                <NuxtLink to="/subcategorias" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'subcategorias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Sub-Categorías</NuxtLink>
-                <NuxtLink to="/proveedores" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'proveedores' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Proveedores</NuxtLink>
-                <NuxtLink to="/notificaciones" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'notificaciones' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Notificaciones</NuxtLink>
-                <NuxtLink to="/crearproducto" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'crearproducto' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Crear Producto</NuxtLink>
-                <NuxtLink to="/importar-productos" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'importar-productos' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Importar Productos</NuxtLink>
-                <NuxtLink to="/importar-familias" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'importar-familias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Importar Familias</NuxtLink>
-                <NuxtLink to="/importar-proveedores" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'importar-proveedores' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Importar Proveedores</NuxtLink>
-                <NuxtLink to="/informes" class="block px-8 py-2 hover:bg-gray-100" :class="activePage === 'informes' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'">Informes</NuxtLink>
-              </div>
-            </div>
-            <div v-if="user" class="flex items-center space-x-2 bg-[#689f38] px-3 py-2 rounded-md transition">
-              <span class="text-white">{{ user.username }}</span>
-              <button
-                @click="logout"
-                class="text-white hover:text-red-400 text-sm px-2 py-1 rounded transition"
-                title="Cerrar sesión"
-              >
-                <!-- Puedes usar texto simple -->
-                Logout
-                <!-- O un icono de salida, por ejemplo SVG -->
-                
-                <svg xmlns="http://www.w3.org/2000/svg" class="inline w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
-                </svg>
-              </button>
-            </div>
-            <div v-else>
+          <!-- Menú escritorio -->
+          <div class="hidden md:flex space-x-4 flex-grow justify-end min-w-0">
+            <div v-if="!user" class="flex items-center space-x-2">
               <button
                 @click="openLoginModal"
                 class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition"
@@ -103,41 +26,252 @@
                 Ingresar
               </button>
             </div>
-          </div>
-        </div>
-        <!-- Botón campana + hamburguesa en móvil -->
-        <div class="flex items-center space-x-2 md:hidden">
-          <!-- Bloque central (nombre de sección actual) -->
-          <div v-if="mobileActiveSection" class="pointer-events-auto">
-            <NuxtLink
-              :to="mobileActiveSection.link"
-              class="bg-[#689f38] text-white text-sm font-bold px-3 py-1 rounded-md truncate"
-            >
-              {{ mobileActiveSection.label }}
-            </NuxtLink>
+
+            <template v-else>
+              <!-- Menú completo para usuario logueado -->
+              <div class="flex items-center space-x-2">
+                <button
+                  @click="openAlertModal"
+                  class="relative group"
+                  title="Productos por vencer"
+                >
+                  <div
+                    class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
+                    :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
+                      class="w-6 h-6 transition"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"
+                      />
+                    </svg>
+                    <span
+                      v-if="notificaciones.length > 0"
+                      class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md"
+                    >
+                      {{ notificaciones.length }}
+                    </span>
+                  </div>
+                </button>
+
+                <NuxtLink
+                  to="/agregarlote"
+                  class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center"
+                  :class="activePage === 'agregarlote' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                >
+                  Ingreso x Lote
+                </NuxtLink>
+                <NuxtLink
+                  to="/agregarstock"
+                  class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center"
+                  :class="activePage === 'agregarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                >
+                  Ingreso Unitario
+                </NuxtLink>
+                <NuxtLink
+                  to="/quitarstock"
+                  class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition text-center"
+                  :class="activePage === 'quitarstock' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                >
+                  Salida Unitaria
+                </NuxtLink>
+
+                <div class="relative" @mouseleave="submenuOpen = false">
+                  <button
+                    @click="submenuOpen = !submenuOpen"
+                    class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition flex items-center space-x-1"
+                  >
+                    <span>Organización de Productos</span>
+                    <svg
+                      :class="{ 'rotate-180': submenuOpen }"
+                      class="w-4 h-4 transition-transform"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <div
+                    v-show="submenuOpen"
+                    class="absolute left-0 top-full w-59 bg-white text-black rounded-md shadow-lg z-50"
+                    @mouseenter="submenuOpen = true"
+                    @mouseleave="submenuOpen = false"
+                  >
+                    <NuxtLink
+                      to="/productos"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'productos' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Productos
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/categorias"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'categorias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Categorías
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/subcategorias"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'subcategorias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Sub-Categorías
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/proveedores"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'proveedores' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Proveedores
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/notificaciones"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'notificaciones' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Notificaciones
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/crearproducto"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'crearproducto' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Crear Producto
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/importar-productos"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'importar-productos' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Importar Productos
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/importar-familias"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'importar-familias' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Importar Familias
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/importar-proveedores"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'importar-proveedores' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Importar Proveedores
+                    </NuxtLink>
+                    <NuxtLink
+                      to="/informes"
+                      class="block px-8 py-2 hover:bg-gray-100"
+                      :class="activePage === 'informes' ? 'bg-[#689f38] font-bold' : 'hover:bg-[#7cb342]'"
+                    >
+                      Informes
+                    </NuxtLink>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2 bg-[#689f38] px-3 py-2 rounded-md transition">
+                  <span class="text-white">{{ user.username }}</span>
+                  <button
+                    @click="logout"
+                    class="text-white hover:text-red-400 text-sm px-2 py-1 rounded transition"
+                    title="Cerrar sesión"
+                  >
+                    Logout
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="inline w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </template>
           </div>
 
-          <!-- Botón campana -->
-          <button
-            @click="openAlertModal"
-            class="relative group"
-            title="Productos por vencer"
-          >
-            <!-- ... icono campana con notificaciones ... -->
-          </button>
+          <!-- Menú móvil -->
+          <div class="flex items-center space-x-2 md:hidden">
+            <template v-if="!user">
+              <button
+                @click="openLoginModal"
+                class="hover:bg-[#7cb342] px-3 py-2 rounded-md transition"
+                :class="isLoginModalOpen ? 'bg-[#689f38] font-bold' : ''"
+              >
+                Ingresar
+              </button>
+            </template>
 
-          <!-- Botón hamburguesa -->
-          <button
-            @click="toggleMenu"
-            class="text-white focus:outline-none text-2xl z-60 relative"
-            aria-label="Abrir menú móvil"
-          >
-            ☰
-          </button>
+            <template v-else>
+              <!-- Botón campana -->
+              <button
+                @click="openAlertModal"
+                class="relative group"
+                title="Productos por vencer"
+              >
+                <!-- Aquí va tu icono campana como antes -->
+                <div
+                  class="relative w-9 h-9 flex items-center justify-center rounded-full transition duration-200"
+                  :class="notificaciones.length > 0 ? 'bg-yellow-100 group-hover:bg-yellow-200' : 'bg-white/10 group-hover:bg-white/20'"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    :class="notificaciones.length > 0 ? 'text-yellow-600' : 'text-white'"
+                    class="w-6 h-6 transition"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 7.165 7 9.03 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h5m5 0v1a3 3 0 01-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                  <span
+                    v-if="notificaciones.length > 0"
+                    class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md"
+                  >
+                    {{ notificaciones.length }}
+                  </span>
+                </div>
+              </button>
+
+              <!-- Botón hamburguesa -->
+              <button
+                @click="toggleMenu"
+                class="text-white focus:outline-none text-2xl z-60 relative"
+                aria-label="Abrir menú móvil"
+              >
+                ☰
+              </button>
+            </template>
+          </div>
         </div>
       </div>
-    </div>
-  </nav>
+    </nav>
+
 
   <!-- Menú móvil desplegable -->
   <div
@@ -315,7 +449,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watchEffect, capitalize } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const activePage = ref('')
 const isLoginModalOpen = ref(false)
@@ -329,11 +463,12 @@ const mostrarAviso = ref(false)
 const mensajeAviso = ref('')
 const submenuOpen = ref(false)
 const ocultarNotificaciones = ref(new Set()) // Para la funcionalidad de posponer
-
+const router = useRouter();
 const user = ref(null)
 const toggleShowPassword = () => {
   showPassword.value = !showPassword.value
 }
+
 onMounted(async () => {
   try {
     const response = await fetch('http://localhost:8000/api/whoami/', {
@@ -438,6 +573,10 @@ const handleLogin = async () => {
     } else {
       alert(data.message || 'Error en el login')
     }
+    if (response.ok) {
+    // login ok
+    router.push('/')  // redirige al home o dashboard
+  } 
   } catch (err) {
     console.error('Error al hacer login:', err)
     alert('Error de red o servidor')
@@ -635,7 +774,17 @@ const allPagesLabels = {
 const mobileActiveSection = computed(() => {
   return allPagesLabels[activePage.value] || null;
 });
+watch(user, (newVal) => {
+  if (!newVal) {
+    router.push("/nouser");
+  }
+});
 
+onMounted(() => {
+  if (!user.value) {
+    router.push("/nouser");
+  }
+});
 onMounted(() => {
   cargarNotificaciones()
 })
