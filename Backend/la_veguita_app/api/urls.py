@@ -18,6 +18,8 @@ urlpatterns = [
     path('categories/<int:id_category>/products/', views.ProductsByCategory.as_view(), name='products-by-category'),
     path("sales/", views.SaleListCreate.as_view(), name="sale-create-list"),
     path("sales/<int:id_sale>", views.SaleRetrieveUpdateDestroy.as_view(), name="sale-retrieve-update-destroy"),
+    path("wrong-sale-details/", views.WrongSaleDetailListCreate.as_view(), name="wrong-sale-detail-create-list"),
+    path("wrong-sale-details/<int:id_wrong_sale_detail>", views.WrongSaleDetailRetrieveUpdateDestroy.as_view(), name="wrong-sale-detail-retrieve-update-destroy"),
     path("batches/", views.BatchListCreate.as_view(), name="batch-create-list"),
     path("batches/<int:id_batch>", views.BatchRetrieveUpdateDestroy.as_view(), name="batch-retrieve-update-destroy"),
     path('batches/expiring/', views.BatchExpiringSoonView.as_view()),

@@ -8,3 +8,4 @@ from .sale_detail_views import *
 from .supplier_views import *
 from .notification_views import *
 from .file_processing_views import *
+from .wrong_sale_detail_views import *

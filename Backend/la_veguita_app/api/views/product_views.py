@@ -2,9 +2,33 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
+from django.core.cache import cache
 from ..models import Product
 from ..serializers import ProductSerializer
 
+
+CACHE_TIMEOUT = 86400  # 24 hour of cache
+
+
+# Helper function to update or add product in cache list
+def update_product_in_cache_list(product_data):
+    products_list = cache.get('products_all')
+    if products_list is not None:
+        for idx, p in enumerate(products_list):
+            if p['id_product'] == product_data['id_product']:
+                products_list[idx] = product_data
+                break
+        else:
+            products_list.append(product_data)
+        cache.set('products_all', products_list, timeout=CACHE_TIMEOUT)
+
+
+# Helper function to remove product in cache list
+def remove_product_from_cache_list(product_id):
+    products_list = cache.get('products_all')
+    if products_list is not None:
+        products_list = [p for p in products_list if p['id_product'] != product_id]
+        cache.set('products_all', products_list, timeout=CACHE_TIMEOUT)
 
 """
     Vista API para crear un nuevo producto.
@@ -37,6 +61,15 @@ class ProductCreateView(generics.CreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def perform_create(self, serializer):
+        product = serializer.save()
+
+        # save product to cache
+        cache.set(f'product:{product.id_product}', ProductSerializer(product).data, timeout=CACHE_TIMEOUT)
+
+        # add to cache list
+        update_product_in_cache_list(ProductSerializer(product).data)
+
 
 """
     Vista API para listar todos los productos registrados.
@@ -67,6 +100,16 @@ class ProductCreateView(generics.CreateAPIView):
 """
 class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
+
+    def list(self, request, *args, **kwargs):
+        # first search on cache
+        products_list = cache.get('products_all')
+        if products_list is None:
+            queryset = self.get_queryset()
+            serializer = self.get_serializer(queryset, many=True)
+            products_list = serializer.data
+            cache.set('products_all', products_list, timeout=CACHE_TIMEOUT)
+        return Response(products_list)
 
     def get_queryset(self):
         return Product.objects.filter(active=True)
@@ -104,10 +147,40 @@ class ProductRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Product.objects.filter(active=True)
 
+    def retrieve(self, request, *args, **kwargs):
+        product_id = kwargs.get(self.lookup_field)
+        product_data = cache.get(f'product:{product_id}')
+        if product_data is None:
+            instance = self.get_object()
+            product_data = ProductSerializer(instance).data
+            cache.set(f'product:{product_id}', product_data, timeout=CACHE_TIMEOUT)
+        return Response(product_data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        product = serializer.save()
+
+        # update individual cache
+        product_data = ProductSerializer(product).data
+        cache.set(f'product:{product.id_product}', product_data, timeout=CACHE_TIMEOUT)
+
+        # update cache list
+        update_product_in_cache_list(product_data)
+
+        return Response(product_data)
+
     def destroy(self, request, *args, **kwargs):
         product = self.get_object()
         product.active = False
         product.save()
+
+        # delete from cache and cache list
+        cache.delete(f'product:{product.id_product}')
+        remove_product_from_cache_list(product.id_product)
+
         return Response({"message": "Producto eliminado exitosamente."}, status=status.HTTP_200_OK)
 
 """

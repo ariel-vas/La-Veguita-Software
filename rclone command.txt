@@ -1,0 +1,1 @@
+rclone copy "gdrive:Journal" /home/azureuser/srv/journals --max-age 7d --include "Journal*" --update
